@@ -92,7 +92,7 @@ bintray {
     }
     publications = ['maven']
     pkg {
-        repo = 'cypher'
+        repo = 'gomorpheus'
         userOrg = 'bertramlabs'
         name = 'cypher-core'
         licenses = ['Apache-2.0']
