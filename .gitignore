@@ -1,0 +1,5 @@
+/build/
+cypher-core/build
+.gradle
+.idea
+

@@ -1,0 +1,222 @@
+package com.morpheusdata.cypher.datastores;
+
+import com.morpheusdata.cypher.CypherValue;
+import com.morpheusdata.cypher.Datastore;
+import com.morpheusdata.cypher.ValueEncoder;
+import com.morpheusdata.cypher.exception.DatastoreException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * This is a standard flat file datastore implementation. MD5 hashing is used to optimize key file matching.
+ * NOTE: Not Recommended for HA Deployments or Production.
+ *
+ * @author David Estes
+ */
+public class FlatFileDatastore implements Datastore {
+	private Log log = LogFactory.getLog(FlatFileDatastore.class);
+	private String basePath;
+	Map<String, Object> fileLocks = new HashMap<String, Object>();
+
+	/**
+	 * The flat-file {@link Datastore} must be implemented targeting a specific base path
+	 * @param basePath
+	 */
+	public FlatFileDatastore(String basePath) {
+		this.basePath = basePath;
+
+	}
+
+	@Override
+	public CypherValue read(String key) throws DatastoreException{
+		try {
+			String hash = keyHash(key);
+			Map<String,Map<String,String>> dataSet = readFile(hash);
+			Map<String,String> result = dataSet.get(key);
+			if(result != null) {
+				System.out.println("Creating Cypher Value: ");
+				return CypherValue.fromMap(result);
+			}
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to persist a key value", ex);
+		}
+		return null;
+	}
+
+	@Override
+	public synchronized void write(String key, CypherValue value) throws DatastoreException {
+		try {
+			String hash = keyHash(key);
+			Map<String,Map<String,String>> dataSet = readFile(hash);
+			dataSet.put(key,value.toMap());
+			writeFile(hash,dataSet);
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to persist a key value", ex);
+		}
+	}
+
+	@Override
+	public void delete(String key) throws DatastoreException {
+		try {
+			String hash = keyHash(key);
+			Map<String,Map<String,String>> dataSet = readFile(hash);
+			if(dataSet.get(key) != null) {
+				dataSet.remove(key);
+				writeFile(hash,dataSet);
+			}
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to persist a key value", ex);
+		}
+	}
+
+	@Override
+	public void purgeExpiredKeys() {
+		Date now = new Date();
+		try {
+			List<String> hashNames = getHashFileNames();
+			for(int counter=0;counter < hashNames.size();counter++) {
+				String hash = hashNames.get(counter);
+				Map<String,Map<String,String>> dataSet = readFile(hash);
+				boolean changes = false;
+				for (String key : dataSet.keySet()) {
+					String leaseTimeoutString = dataSet.get(key).get("leaseExpireTime");
+					if(leaseTimeoutString != null) {
+						Long leaseTimeout = new Long(leaseTimeoutString);
+						if(leaseTimeout < now.getTime()) {
+							//we have to delete this key;
+							dataSet.remove(key);
+							changes = true;
+						}
+					}
+				}
+				if(changes == true) {
+					writeFile(hash,dataSet);
+				}
+			}
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to list known keys in a Datastore.",ex);
+		}
+	}
+
+	@Override
+	public List<String> listKeys() {
+		try {
+			List<String> hashNames = getHashFileNames();
+			ArrayList<String> keys = new ArrayList<String>();
+			for(int counter=0;counter < hashNames.size();counter++) {
+				String hash = hashNames.get(counter);
+				Map<String,Map<String,String>> dataSet = readFile(hash);
+				for (String key : dataSet.keySet()) {
+					keys.add(key);
+				}
+			}
+			return keys;
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to list known keys in a Datastore.",ex);
+		}
+	}
+
+	@Override
+	public List<String> listKeys(String regex) {
+		try {
+			Pattern pattern = Pattern.compile(regex);
+			List<String> hashNames = getHashFileNames();
+			ArrayList<String> keys = new ArrayList<String>();
+			for(int counter=0;counter < hashNames.size();counter++) {
+				String hash = hashNames.get(counter);
+				Map<String,Map<String,String>> dataSet = readFile(hash);
+				for (String key : dataSet.keySet()) {
+					Matcher matcher = pattern.matcher(key);
+					if(matcher.find()) {
+						keys.add(key);
+					}
+				}
+			}
+			return keys;
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to list known keys in a Datastore.",ex);
+		}
+	}
+
+	protected Map<String,Map<String,String>> readFile(String hash) throws IOException, ClassNotFoundException {
+		Object lockObj = getLockObject(hash);
+		System.out.println("Reading File: " + hash);
+
+		File file = new File(this.basePath,hash);
+		String fileLocation = file.getCanonicalPath();
+		if(!file.exists()) {
+			return new HashMap<String,Map<String,String>>();
+		}
+		synchronized(lockObj) {
+			FileInputStream fis = new FileInputStream(fileLocation);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+
+			Map<String,Map<String,String>> result = (Map<String,Map<String,String>>)ois.readObject();
+			System.out.println("Reading Object: " + hash +  "value " + result);
+			return result;
+		}
+	}
+
+	protected void writeFile(String hash, Map<String,Map<String,String>> data) throws IOException, ClassNotFoundException  {
+		Object lockObj = getLockObject(hash);
+		System.out.println("Writing File: " + hash + " With Data: " + data);
+		File file = new File(this.basePath,hash);
+		String fileLocation = file.getCanonicalPath();
+		if(!file.exists()) {
+			file.getParentFile().mkdirs();
+//			file.createNewFile();
+		}
+		synchronized(lockObj) {
+			FileOutputStream fos = new FileOutputStream(fileLocation);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			oos.writeObject(data);
+			oos.flush();
+			fos.flush();
+			oos.close();
+			fos.close();
+		}
+	}
+
+	protected List<String> getHashFileNames() {
+		File file = new File(this.basePath);
+		File[] files = file.listFiles();
+		ArrayList<String> hashNames = new ArrayList<String>();
+
+		for(int counter=0;counter < files.length;counter++) {
+			if(files[counter].isFile()) {
+				hashNames.add(files[counter].getName());
+			}
+		}
+		return hashNames;
+	}
+
+
+	protected Object getLockObject(String hash) {
+		synchronized(fileLocks) {
+			Object obj = fileLocks.get(hash);
+			if(obj != null) {
+				return obj;
+			} else {
+				obj = new Object();
+				fileLocks.put(hash, obj);
+				return obj;
+			}
+		}
+	}
+
+
+	protected String keyHash(String key) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("MD5");
+		digest.update(key.getBytes("UTF-8"));
+		String fullHash = DatatypeConverter.printBase64Binary(digest.digest());
+		return fullHash.substring(0,3);
+	}
+}
