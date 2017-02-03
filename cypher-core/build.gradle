@@ -95,6 +95,7 @@ bintray {
         repo = 'gomorpheus'
         userOrg = 'bertramlabs'
         name = 'cypher-core'
+        vcsUrl = 'https://github.com/bertramdev/cypher.git'
         licenses = ['Apache-2.0']
     }
 }
