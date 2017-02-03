@@ -11,6 +11,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -109,7 +110,7 @@ public class Cypher {
 		String relativeKey = key.substring(path.length()+1);
 		CypherObject obj = module.write(relativeKey,path, value, leaseTimeout != null ? leaseTimeout : this.leaseTimeout);
 		if(obj != null) {
-			writeCypherObject(key,obj,obj.leaseTimeout);
+			writeCypherObject(obj,obj.leaseTimeout);
 			return obj;
 		}
 		return null;
@@ -128,7 +129,7 @@ public class Cypher {
 			return null;
 		}
 
-		CypherValue value = datastore.read(key);
+		CypherValue value = datastore.read(id,key);
 		if(value != null) {
 			byte[] encryptedEncryptionKey = DatatypeConverter.parseBase64Binary(value.encryptedEncryptionKey);
 			byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
@@ -140,7 +141,7 @@ public class Cypher {
 			String relativeKey = key.substring(path.length()+1);
 			CypherObject obj = module.read(relativeKey,path, leaseTimeout != null ? leaseTimeout : this.leaseTimeout);
 			if(obj != null) {
-				writeCypherObject(key,obj,obj.leaseTimeout);
+				writeCypherObject(obj,obj.leaseTimeout);
 				return obj;
 			}
 			return null;
@@ -148,12 +149,20 @@ public class Cypher {
 
 	}
 
-	protected void writeCypherObject(String key, CypherObject obj, Long leaseTimeout) {
+	public List<String> listKeys() {
+		return datastore.listKeys(this.id);
+	}
+
+	public List<String> listKeys(String regex) {
+		return datastore.listKeys(this.id,regex);
+	}
+
+	protected void writeCypherObject(CypherObject obj, Long leaseTimeout) {
 		byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,cypherMeta.encryptedEncryptionKey);
 		String encryptedValue = valueEncoder.encode(decryptedEncryptionKey, obj.value);
 		SecurityUtils.secureErase(decryptedEncryptionKey);
 		CypherValue value = new CypherValue(obj.key,encryptedValue,DatatypeConverter.printBase64Binary(cypherMeta.encryptedEncryptionKey),obj.leaseTimeout);
-		datastore.write(obj.key,value);
+		datastore.write(id,value);
 	}
 
 	/**

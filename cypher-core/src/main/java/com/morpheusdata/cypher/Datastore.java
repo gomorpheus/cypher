@@ -9,12 +9,12 @@ import java.util.List;
  */
 public interface Datastore {
 
-	CypherValue read(String key) throws DatastoreException;
-	void write(String key, CypherValue value) throws DatastoreException;
-	void delete(String key) throws DatastoreException;
-	void purgeExpiredKeys() throws DatastoreException;
+	CypherValue read(String cypherId,String key) throws DatastoreException;
+	void write(String cypherId, CypherValue value) throws DatastoreException;
+	void delete(String cypherId, String key) throws DatastoreException;
+	void purgeExpiredKeys(String cypherId) throws DatastoreException;
 
-	List<String> listKeys() throws DatastoreException;
-	List<String> listKeys(String regex) throws DatastoreException;
+	List<String> listKeys(String cypherId) throws DatastoreException;
+	List<String> listKeys(String cypherId, String regex) throws DatastoreException;
 
 }

@@ -36,11 +36,12 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public CypherValue read(String key) throws DatastoreException{
+	public CypherValue read(String cypherId, String key) throws DatastoreException{
 		try {
-			String hash = keyHash(key);
+			String realKey = cypherId + "/" + key;
+			String hash = keyHash(realKey);
 			Map<String,Map<String,String>> dataSet = readFile(hash);
-			Map<String,String> result = dataSet.get(key);
+			Map<String,String> result = dataSet.get(realKey);
 			if(result != null) {
 				System.out.println("Creating Cypher Value: ");
 				return CypherValue.fromMap(result);
@@ -52,11 +53,12 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public synchronized void write(String key, CypherValue value) throws DatastoreException {
+	public synchronized void write(String cypherId, CypherValue value) throws DatastoreException {
 		try {
-			String hash = keyHash(key);
+			String realKey = cypherId + "/" + value.key;
+			String hash = keyHash(realKey);
 			Map<String,Map<String,String>> dataSet = readFile(hash);
-			dataSet.put(key,value.toMap());
+			dataSet.put(realKey,value.toMap());
 			writeFile(hash,dataSet);
 		} catch(Exception ex) {
 			throw new DatastoreException("An Error Occurred while trying to persist a key value", ex);
@@ -64,12 +66,13 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public void delete(String key) throws DatastoreException {
+	public void delete(String cypherId, String key) throws DatastoreException {
 		try {
-			String hash = keyHash(key);
+			String realKey = cypherId + "/" + key;
+			String hash = keyHash(realKey);
 			Map<String,Map<String,String>> dataSet = readFile(hash);
-			if(dataSet.get(key) != null) {
-				dataSet.remove(key);
+			if(dataSet.get(realKey) != null) {
+				dataSet.remove(realKey);
 				writeFile(hash,dataSet);
 			}
 		} catch(Exception ex) {
@@ -78,7 +81,7 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public void purgeExpiredKeys() {
+	public void purgeExpiredKeys(String cypherId) {
 		Date now = new Date();
 		try {
 			List<String> hashNames = getHashFileNames();
@@ -87,13 +90,15 @@ public class FlatFileDatastore implements Datastore {
 				Map<String,Map<String,String>> dataSet = readFile(hash);
 				boolean changes = false;
 				for (String key : dataSet.keySet()) {
-					String leaseTimeoutString = dataSet.get(key).get("leaseExpireTime");
-					if(leaseTimeoutString != null) {
-						Long leaseTimeout = new Long(leaseTimeoutString);
-						if(leaseTimeout < now.getTime()) {
-							//we have to delete this key;
-							dataSet.remove(key);
-							changes = true;
+					if(key.startsWith(cypherId + "/")) {
+						String leaseTimeoutString = dataSet.get(key).get("leaseExpireTime");
+						if(leaseTimeoutString != null) {
+							Long leaseTimeout = new Long(leaseTimeoutString);
+							if(leaseTimeout < now.getTime()) {
+								//we have to delete this key;
+								dataSet.remove(key);
+								changes = true;
+							}
 						}
 					}
 				}
@@ -107,15 +112,19 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public List<String> listKeys() {
+	public List<String> listKeys(String cypherId) {
 		try {
 			List<String> hashNames = getHashFileNames();
 			ArrayList<String> keys = new ArrayList<String>();
 			for(int counter=0;counter < hashNames.size();counter++) {
 				String hash = hashNames.get(counter);
 				Map<String,Map<String,String>> dataSet = readFile(hash);
+
 				for (String key : dataSet.keySet()) {
-					keys.add(key);
+					if(key.startsWith(cypherId + "/")) {
+						String realKey = key.substring(cypherId.length() + 1);
+						keys.add(realKey);
+					}
 				}
 			}
 			return keys;
@@ -125,7 +134,7 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public List<String> listKeys(String regex) {
+	public List<String> listKeys(String cypherId, String regex) {
 		try {
 			Pattern pattern = Pattern.compile(regex);
 			List<String> hashNames = getHashFileNames();
@@ -134,10 +143,14 @@ public class FlatFileDatastore implements Datastore {
 				String hash = hashNames.get(counter);
 				Map<String,Map<String,String>> dataSet = readFile(hash);
 				for (String key : dataSet.keySet()) {
-					Matcher matcher = pattern.matcher(key);
-					if(matcher.find()) {
-						keys.add(key);
+					if(key.startsWith(cypherId + "/")) {
+						String realKey = key.substring(cypherId.length()+1);
+						Matcher matcher = pattern.matcher(realKey);
+						if(matcher.find()) {
+							keys.add(realKey);
+						}
 					}
+
 				}
 			}
 			return keys;

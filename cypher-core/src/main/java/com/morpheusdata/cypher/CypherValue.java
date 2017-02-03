@@ -15,6 +15,7 @@ public class CypherValue {
 
 	CypherValue(String key, String value, String encryptedEncryptionKey, Long leaseTimeout) {
 		this.value = value;
+		this.key = key;
 		this.encryptedEncryptionKey = encryptedEncryptionKey;
 		this.leaseTimeout = leaseTimeout;
 	}
