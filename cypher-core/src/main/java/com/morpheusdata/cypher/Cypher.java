@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Primary Entrypoint Class for accessing keys and configuring a Cypher vault
+ * Primary Entrypoint Class for accessing keys and configuring a Cypher vault.
  *
  * @author David Estes
  */
@@ -63,6 +63,10 @@ public class Cypher {
 
 	public void deregisterModule(String mountPoint) {
 		mountedModules.remove(mountPoint);
+	}
+
+	public Map<String, CypherModule> getMountedModules() {
+		return this.mountedModules;
 	}
 
 	public void setMasterKey(String masterKey) {

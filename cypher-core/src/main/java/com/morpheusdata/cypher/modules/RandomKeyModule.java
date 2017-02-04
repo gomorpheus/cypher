@@ -30,7 +30,7 @@ public class RandomKeyModule implements CypherModule {
 
 		if(keyArgs.length > 1) {
 			try {
-				length = Integer.parseInt(keyArgs[keyArgs.length - 1]);
+				length = Integer.parseInt(keyArgs[0]);
 			} catch(NumberFormatException ex) {
 				//its ok we default to 16 anyway
 			}
@@ -54,4 +54,19 @@ public class RandomKeyModule implements CypherModule {
 		return true;
 	}
 
+	public String getUsage() {
+		StringBuilder usage = new StringBuilder();
+
+		usage.append("Generates a Base 64 encoded AES Key of specified bit length in the key pattern (i.e. {mountPoint}/128/mykey generates a 128-bit key)");
+
+		return usage.toString();
+	}
+
+	public String getHTMLUsage() {
+		StringBuilder usage = new StringBuilder();
+
+		usage.append("<p>Generates a Base 64 encoded AES Key of specified bit length in the key pattern (i.e. {mountPoint}/128/mykey generates a 128-bit key)</p>");
+
+		return usage.toString();
+	}
 }

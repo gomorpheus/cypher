@@ -27,4 +27,19 @@ public class UUIDModule implements CypherModule {
 		return true;
 	}
 
+	public String getUsage() {
+		StringBuilder usage = new StringBuilder();
+
+		usage.append("Returns a new UUID by key name when requested and stores the generated UUID by key name for a given lease timeout period.");
+
+		return usage.toString();
+	}
+
+	public String getHTMLUsage() {
+		StringBuilder usage = new StringBuilder();
+
+		usage.append("<p>Returns a new UUID by key name when requested and stores the generated UUID by key name for a given lease timeout period.</p>");
+
+		return usage.toString();
+	}
 }

@@ -112,7 +112,7 @@ task sourcesJar(type: Jar) {
 
 task morpheusJavaDoc(type: Javadoc) {
   source = sourceSets.main.allJava
-  title = "Morpheus Java SDK"
+  title = "Cypher Core Docs"
 }
 
 task(console, dependsOn: 'classes', type: JavaExec) {
