@@ -47,7 +47,7 @@ public class FlatFileDatastore implements Datastore {
 				return CypherValue.fromMap(result);
 			}
 		} catch(Exception ex) {
-			throw new DatastoreException("An Error Occurred while trying to persist a key value", ex);
+			throw new DatastoreException("An Error Occurred while trying to read a key value", ex);
 		}
 		return null;
 	}

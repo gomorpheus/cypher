@@ -6,4 +6,5 @@ package com.morpheusdata.cypher;
 public interface CypherModule {
 	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout);
 	public CypherObject read(String relativeKey, String path, Long leaseTimeout);
+	public boolean delete(String relativeKey, String path, CypherObject object);
 }

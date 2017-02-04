@@ -22,5 +22,9 @@ public class SecretModule implements CypherModule {
 		return null;
 	}
 
+	public boolean delete(String relativeKey, String path, CypherObject object) {
+		return true;
+	}
+
 
 }

@@ -50,4 +50,8 @@ public class RandomKeyModule implements CypherModule {
 		}
 	}
 
+	public boolean delete(String relativeKey, String path, CypherObject object) {
+		return true;
+	}
+
 }

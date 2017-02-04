@@ -23,4 +23,8 @@ public class UUIDModule implements CypherModule {
 		return new CypherObject(key,value,leaseTimeout);
 	}
 
+	public boolean delete(String relativeKey, String path, CypherObject object) {
+		return true;
+	}
+
 }

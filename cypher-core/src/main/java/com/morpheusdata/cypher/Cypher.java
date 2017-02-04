@@ -149,6 +149,29 @@ public class Cypher {
 
 	}
 
+	/**
+	 * Main endpoint for deleting keys and their values. This method also ties into any mounted modules and passes on
+	 * any delete requests as well. This is useful if the module needs to clear out any saved credentials.
+	 * @param key
+	 *
+	 * @return
+	 */
+	public boolean delete(String key) {
+		String path = getMountPathForKey(key);
+		if(path == null) {
+			return false;
+		}
+		CypherObject obj = read(key);
+		CypherModule module = mountedModules.get(path);
+		String relativeKey = key.substring(path.length()+1);
+		if(module.delete(relativeKey,path, obj)) {
+			datastore.delete(id,key);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public List<String> listKeys() {
 		return datastore.listKeys(this.id);
 	}
