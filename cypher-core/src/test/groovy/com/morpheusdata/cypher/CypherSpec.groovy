@@ -49,14 +49,27 @@ class CypherSpec extends Specification{
 
 	void "it should be able to store and retrieve a key"() {
 		given:
-		String secret = cypher.read("key/hello/128").value;
+		String secret = cypher.read("key/128/hello").value;
 
 		when:
-		def result = cypher.read("key/hello/128")
+		def result = cypher.read("key/128/hello")
 		then:
 		DatatypeConverter.parseBase64Binary(result?.value)?.size() == 16
 		result?.value == secret
 	}
+
+	void "it should be able to store and retrieve a password of length 18"() {
+		given:
+		String secret = cypher.read("password/18/mypassword").value;
+
+		when:
+		def result = cypher.read("password/18/mypassword")
+		then:
+		println "Password ${result.value}"
+		result?.value?.size() == 18
+		result?.value == secret
+	}
+
 
 
 	def cleanup() {
