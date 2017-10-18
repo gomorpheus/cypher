@@ -19,7 +19,13 @@ public class CypherCleanupThread extends Thread {
 		while(run) {
 			if(Cypher.cypherClasses != null && Cypher.cypherClasses.size() > 0) {
 				for(Cypher cypher : Cypher.cypherClasses) {
-					cypher.purgeExpiredKeys();
+					try {
+						cypher.purgeExpiredKeys();
+					} catch(Exception ex) {
+						System.out.println("Error purging expired keys: " + ex.getMessage());
+						ex.printStackTrace();
+						// ignore silently errors related to purging of expired keys
+					}
 				}
 			}
 			try {
