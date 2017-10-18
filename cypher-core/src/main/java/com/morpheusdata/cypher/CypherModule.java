@@ -23,9 +23,11 @@ public interface CypherModule {
 	 *             and relativeKey value with a '/'
 	 * @param value the unencrypted value we wish to write to the cypher {@link Datastore} and/or capture for configuration
 	 * @param leaseTimeout the user specified leaseTimeout in milliseconds for when this key will expire.
+	 * @param leaseObjectRef an object reference that can be checked against instead of a temporal value for key invalidation
+	 * @param createdBy an object reference for a user that may have been used to create the key. Useful for permissions tracking
 	 * @return a {@link CypherObject} that is then passed on to a {@link Datastore} encrypted for safe keeping.
 	 */
-	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout);
+	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy);
 
 	/**
 	 * The read endpoint is called when a value for a key is requested by the user. Typically if a value is already saved
@@ -37,9 +39,12 @@ public interface CypherModule {
 	 * @param path the mount path used when creating the key. the original key can often be rebuilt by joining the path
 	 *             and relativeKey value with a '/'
 	 * @param leaseTimeout the user specified leaseTimeout in milliseconds for when this key will expire.
+	 * @param leaseObjectRef an object reference that can be checked against instead of a temporal value for key invalidation
+	 * @param createdBy an object reference for a user that may have been used to create the key. Useful for permissions tracking
+	 *
 	 * @return a {@link CypherObject} that is then passed on to a {@link Datastore} encrypted for safe keeping.
 	 */
-	public CypherObject read(String relativeKey, String path, Long leaseTimeout);
+	public CypherObject read(String relativeKey, String path, Long leaseTimeout, String leaseObjectRef, String createdBy);
 
 	/**
 	 * The delete endpoint is called when a user requests that a key be deleted or potentially called when a key has expired.

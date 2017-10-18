@@ -66,7 +66,7 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public void delete(String cypherId, String key) throws DatastoreException {
+	public synchronized void delete(String cypherId, String key) throws DatastoreException {
 		try {
 			String realKey = cypherId + "/" + key;
 			String hash = keyHash(realKey);
@@ -81,9 +81,11 @@ public class FlatFileDatastore implements Datastore {
 	}
 
 	@Override
-	public void purgeExpiredKeys(String cypherId) {
+	public List<String> listExpiredKeys(String cypherId) {
+
 		Date now = new Date();
 		try {
+			ArrayList<String> keys = new ArrayList<String>();
 			List<String> hashNames = getHashFileNames();
 			for(int counter=0;counter < hashNames.size();counter++) {
 				String hash = hashNames.get(counter);
@@ -95,17 +97,39 @@ public class FlatFileDatastore implements Datastore {
 						if(leaseTimeoutString != null) {
 							Long leaseTimeout = new Long(leaseTimeoutString);
 							if(leaseTimeout < now.getTime()) {
-								//we have to delete this key;
-								dataSet.remove(key);
-								changes = true;
+								String realKey = key.substring(cypherId.length() + 1);
+								keys.add(realKey);
 							}
 						}
 					}
 				}
-				if(changes == true) {
-					writeFile(hash,dataSet);
+			}
+			return keys;
+		} catch(Exception ex) {
+			throw new DatastoreException("An Error Occurred while trying to list known keys in a Datastore.",ex);
+		}
+	}
+
+	@Override
+	public List<String> listKeysForLeaseRef(String cypherId, String leaseObjectRef) throws DatastoreException {
+		try {
+			List<String> hashNames = getHashFileNames();
+			ArrayList<String> keys = new ArrayList<String>();
+			for(int counter=0;counter < hashNames.size();counter++) {
+				String hash = hashNames.get(counter);
+				Map<String,Map<String,String>> dataSet = readFile(hash);
+				boolean changes = false;
+				for (String key : dataSet.keySet()) {
+					if(key.startsWith(cypherId + "/")) {
+						String tmpLeaseObjectRef = dataSet.get(key).get("leaseObjectRef");
+						if(tmpLeaseObjectRef == leaseObjectRef) {
+							String realKey = key.substring(cypherId.length() + 1);
+							keys.add(realKey);
+						}
+					}
 				}
 			}
+			return keys;
 		} catch(Exception ex) {
 			throw new DatastoreException("An Error Occurred while trying to list known keys in a Datastore.",ex);
 		}

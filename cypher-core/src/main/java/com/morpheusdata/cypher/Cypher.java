@@ -11,6 +11,7 @@ import javax.crypto.KeyGenerator;
 import javax.xml.bind.DatatypeConverter;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,10 @@ public class Cypher {
 	private Datastore datastore;
 	private Long leaseTimeout;
 	private Map<String,CypherModule> mountedModules;
+	public static List<Cypher> cypherClasses = new ArrayList<>();
+	public static CypherCleanupThread cleanupThread;
+
+
 
 	public Cypher(String id, Datastore datastore) {
 		this.status = Status.LOCKED;
@@ -39,6 +44,8 @@ public class Cypher {
 		this.datastore = datastore;
 		this.leaseTimeout = new Long(DEFAULT_LEASE_TIME);
 		registerDefaultModules();
+		cypherClasses.add(this);
+		initializeCleanupThread();
 
 	}
 
@@ -49,6 +56,15 @@ public class Cypher {
 		this.datastore = datastore;
 		this.leaseTimeout = new Long(DEFAULT_LEASE_TIME);
 		registerDefaultModules();
+		cypherClasses.add(this);
+		initializeCleanupThread();
+	}
+
+	static private synchronized void initializeCleanupThread() {
+		if(cleanupThread == null) {
+			cleanupThread = new CypherCleanupThread("cypher-cleanup");
+			cleanupThread.start();
+		}
 	}
 
 	public void registerDefaultModules() {
@@ -99,10 +115,14 @@ public class Cypher {
 	}
 
 	public CypherObject write(String key, String value) throws IllegalStateException {
-		return write(key,value,null);
+		return write(key,value,null,null,null);
 	}
 
-	public CypherObject write(String key, String value, Long leaseTimeout) throws IllegalStateException {
+	public CypherObject write(String key, String value, String createdBy) throws IllegalStateException {
+		return write(key,value,null,null,createdBy);
+	}
+
+	public CypherObject write(String key, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) throws IllegalStateException {
 		if(this.status == Status.LOCKED) {
 			throw new IllegalStateException("Cannot read from nor write to a locked Cypher");
 		}
@@ -114,19 +134,31 @@ public class Cypher {
 
 		CypherModule module = mountedModules.get(path);
 		String relativeKey = key.substring(path.length()+1);
-		CypherObject obj = module.write(relativeKey,path, value, leaseTimeout != null ? leaseTimeout : this.leaseTimeout);
+		CypherObject obj = module.write(relativeKey,path, value, leaseTimeout != null ? leaseTimeout : this.leaseTimeout, leaseObjectRef, createdBy);
 		if(obj != null) {
-			writeCypherObject(obj,obj.leaseTimeout);
+			writeCypherObject(obj);
 			return obj;
 		}
 		return null;
 	}
 
 	public CypherObject read(String key) throws IllegalStateException {
-		return read(key,null);
+		return read(key,null,null,null);
 	}
 
-	public CypherObject read(String key, Long leaseTimeout) throws IllegalStateException {
+	public CypherObject read(String key, String createdBy) throws IllegalStateException {
+		return read(key,null,null,createdBy);
+	}
+
+	public CypherObject read(String key, Long leaseTimeout, String createdBy) throws IllegalStateException {
+		return read(key,leaseTimeout,null,createdBy);
+	}
+
+	public CypherObject read(String key, String leaseObjectRef, String createdBy) throws IllegalStateException {
+		return read(key,null,leaseObjectRef,createdBy);
+	}
+
+	public CypherObject read(String key, Long leaseTimeout, String leaseObjectRef, String createdBy) throws IllegalStateException {
 		if(this.status == Status.LOCKED) {
 			throw new IllegalStateException("Cannot read from nor write to a locked Cypher");
 		}
@@ -141,13 +173,13 @@ public class Cypher {
 			byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
 			String decryptedValue = valueEncoder.decode(decryptedEncryptionKey, value.value);
 			SecurityUtils.secureErase(decryptedEncryptionKey);
-			return new CypherObject(key,decryptedValue,value.leaseTimeout);
+			return new CypherObject(key,decryptedValue,value.leaseTimeout, value.leaseObjectRef, value.createdBy);
 		} else {
 			CypherModule module = mountedModules.get(path);
 			String relativeKey = key.substring(path.length()+1);
-			CypherObject obj = module.read(relativeKey,path, leaseTimeout != null ? leaseTimeout : this.leaseTimeout);
+			CypherObject obj = module.read(relativeKey,path, leaseTimeout != null ? leaseTimeout : this.leaseTimeout, leaseObjectRef, createdBy);
 			if(obj != null) {
-				writeCypherObject(obj,obj.leaseTimeout);
+				writeCypherObject(obj);
 				return obj;
 			}
 			return null;
@@ -178,6 +210,24 @@ public class Cypher {
 		}
 	}
 
+	public void purgeKeysForLeaseRef(String leaseObjectRef) {
+		List<String> keys = datastore.listKeysForLeaseRef(id,leaseObjectRef);
+		if(keys.size() > 0) {
+			for(String key : keys) {
+				delete(key);
+			}
+		}
+	}
+
+	public void purgeExpiredKeys() {
+		List<String> keys = datastore.listExpiredKeys(id);
+		if(keys.size() > 0) {
+			for(String key : keys) {
+				delete(key);
+			}
+		}
+	}
+
 	public List<String> listKeys() {
 		return datastore.listKeys(this.id);
 	}
@@ -186,11 +236,11 @@ public class Cypher {
 		return datastore.listKeys(this.id,regex);
 	}
 
-	protected void writeCypherObject(CypherObject obj, Long leaseTimeout) {
+	protected void writeCypherObject(CypherObject obj) {
 		byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,cypherMeta.encryptedEncryptionKey);
 		String encryptedValue = valueEncoder.encode(decryptedEncryptionKey, obj.value);
 		SecurityUtils.secureErase(decryptedEncryptionKey);
-		CypherValue value = new CypherValue(obj.key,encryptedValue,DatatypeConverter.printBase64Binary(cypherMeta.encryptedEncryptionKey),obj.leaseTimeout);
+		CypherValue value = new CypherValue(obj.key,encryptedValue,DatatypeConverter.printBase64Binary(cypherMeta.encryptedEncryptionKey),obj.leaseTimeout, obj.leaseObjectRef, obj.createdBy);
 		datastore.write(id,value);
 	}
 

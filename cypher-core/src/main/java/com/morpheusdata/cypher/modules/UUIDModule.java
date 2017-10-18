@@ -10,17 +10,17 @@ import com.morpheusdata.cypher.CypherObject;
 public class UUIDModule implements CypherModule {
 	private CypherMeta cypherMeta;
 
-	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout) {
+	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		return null;
 	}
 
-	public CypherObject read(String relativeKey, String path, Long leaseTimeout) {
+	public CypherObject read(String relativeKey, String path, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		String key = relativeKey;
 		if(path != null) {
 			key = path + "/" + key;
 		}
 		String value = java.util.UUID.randomUUID().toString();
-		return new CypherObject(key,value,leaseTimeout);
+		return new CypherObject(key,value,leaseTimeout, leaseObjectRef, createdBy);
 	}
 
 	public boolean delete(String relativeKey, String path, CypherObject object) {

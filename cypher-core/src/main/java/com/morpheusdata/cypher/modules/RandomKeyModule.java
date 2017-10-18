@@ -16,11 +16,11 @@ import java.text.NumberFormat;
  */
 public class RandomKeyModule implements CypherModule {
 
-	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout) {
+	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		return null;
 	}
 
-	public CypherObject read(String relativeKey, String path, Long leaseTimeout) {
+	public CypherObject read(String relativeKey, String path, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		String key = relativeKey;
 		if(path != null) {
 			key = path + "/" + key;
@@ -44,7 +44,7 @@ public class RandomKeyModule implements CypherModule {
 			byte[] generatedKey = keyGenerator.generateKey().getEncoded();
 			System.out.println("Generating Key in Module of length: " + length + " with final size of " + generatedKey.length);
 			String value = DatatypeConverter.printBase64Binary(generatedKey);
-			return new CypherObject(key,value,leaseTimeout);
+			return new CypherObject(key,value,leaseTimeout,leaseObjectRef, createdBy);
 		} catch(Exception ex2) {
 			throw new EncoderException("Error generating Encryption Key",ex2);
 		}

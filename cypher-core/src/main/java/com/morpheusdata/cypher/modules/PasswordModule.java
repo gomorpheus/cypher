@@ -17,19 +17,19 @@ public class PasswordModule implements CypherModule {
 	private String upperCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private String numbers = "0123456789";
 
-	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout) {
+	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		if(value != null && value.length() > 0) {
 			String key = relativeKey;
 			if(path != null) {
 				key = path + "/" + key;
 			}
-			return new CypherObject(key,value,leaseTimeout);
+			return new CypherObject(key,value,leaseTimeout, leaseObjectRef, createdBy);
 		} else {
 			return null; //we dont write no value to a key
 		}
 	}
 
-	public CypherObject read(String relativeKey, String path, Long leaseTimeout) {
+	public CypherObject read(String relativeKey, String path, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		String key = relativeKey;
 		if(path != null) {
 			key = path + "/" + key;
@@ -44,7 +44,7 @@ public class PasswordModule implements CypherModule {
 				//its ok we default to 16 anyway
 			}
 		}
-		return new CypherObject(key,generateRandomPassword(length),leaseTimeout);
+		return new CypherObject(key,generateRandomPassword(length),leaseTimeout,leaseObjectRef, createdBy);
 
 	}
 

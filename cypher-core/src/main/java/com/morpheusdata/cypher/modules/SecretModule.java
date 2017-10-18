@@ -21,12 +21,12 @@ public class SecretModule implements CypherModule {
 	 * @param leaseTimeout the user specified leaseTimeout in milliseconds for when this key will expire.
 	 * @return
 	 */
-	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout) {
+	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		String key = relativeKey;
 		if(path != null) {
 			key = path + "/" + key;
 		}
-		return new CypherObject(key,value,leaseTimeout);
+		return new CypherObject(key,value,leaseTimeout, leaseObjectRef, createdBy);
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class SecretModule implements CypherModule {
 	 * @param leaseTimeout the user specified leaseTimeout in milliseconds for when this key will expire.
 	 * @return
 	 */
-	public CypherObject read(String relativeKey, String path, Long leaseTimeout) {
+	public CypherObject read(String relativeKey, String path, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 
 		//no dynamic generation available for this pattern... read from store
 		return null;
