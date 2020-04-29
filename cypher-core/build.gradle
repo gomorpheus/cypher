@@ -18,7 +18,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-group = 'com.bertramlabs.plugins'
+group = 'com.morpheusdata'
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 
@@ -36,7 +36,7 @@ configurations {
 
 dependencies {
     compile("commons-logging:commons-logging:1.1.1")
-    compile('com.bertramlabs.plugins:hcl4j:0.2.2')
+    compile('com.bertramlabs.plugins:hcl4j:0.3.0')
     testCompile "org.codehaus.groovy:groovy-all:2.4.1"
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 }
@@ -50,11 +50,11 @@ publishing {
                     resolveStrategy = Closure.DELEGATE_FIRST
                     name 'cypher-core'
                     description 'Cypher provides secure secret management with triple level encryption and pluggable backends.'
-                    url 'https://github.com/bertramdev/cypher-core'
+                    url 'https://github.com/gomorpheus/cypher'
                     scm {
-                        url 'https://github.com/bertramdev/cypher-core'
-                        connection 'scm:https://bertramdev@github.com/bertramdev/cypher-core.git'
-                        developerConnection 'scm:git://github.com/bertramdev/cypher-core.git'
+                        url 'https://github.com/gomorpheus/cypher'
+                        connection 'scm:https://git@github.com/gomorpheus/cypher.git'
+                        developerConnection 'scm:git://github.com/gomorpheus/cypher.git'
                     }
                     licenses {
                         license {
@@ -96,7 +96,7 @@ bintray {
         repo = 'gomorpheus'
         userOrg = 'bertramlabs'
         name = 'cypher-core'
-        vcsUrl = 'https://github.com/bertramdev/cypher.git'
+        vcsUrl = 'https://github.com/gomorpheus/cypher.git'
         licenses = ['Apache-2.0']
     }
 }

@@ -89,53 +89,53 @@ public class AwsModule implements CypherModule {
 	 */
 	@Override
 	public CypherObject read(String relativeKey, String path, Long leaseTimeout, String leaseObjectRef, String createdBy) {
-		String key = relativeKey;
-		if(path != null) {
-			key = path + "/" + key;
-		}
-		if(relativeKey.startsWith("config")) {
-			return null;
-		}
+		// String key = relativeKey;
+		// if(path != null) {
+		// 	key = path + "/" + key;
+		// }
+		// if(relativeKey.startsWith("config")) {
+		// 	return null;
+		// }
 
-		String[] pathArgs = relativeKey.split("/");
-		if(pathArgs[0].equals("creds")) {
-			String userName = pathArgs[1];
-			String roleConfigPath = path + "/roles" + pathArgs[1];
-			CypherObject roleConfigResults = cypher.read(roleConfigPath);
-			if(roleConfigResults != null) {
-				Map<String,Object> baseConfig = loadConfig(null);
+		// String[] pathArgs = relativeKey.split("/");
+		// if(pathArgs[0].equals("creds")) {
+		// 	String userName = pathArgs[1];
+		// 	String roleConfigPath = path + "/roles" + pathArgs[1];
+		// 	CypherObject roleConfigResults = cypher.read(roleConfigPath);
+		// 	if(roleConfigResults != null) {
+		// 		Map<String,Object> baseConfig = loadConfig(null);
 
-				AmazonIdentityManagement idManagement = getAmazonIdentityManagementClient(baseConfig);
+		// 		AmazonIdentityManagement idManagement = getAmazonIdentityManagementClient(baseConfig);
 
-				GetUserResult userResult = idManagement.getUser(new GetUserRequest().withUserName(userName));
-				if(userResult.getUser() != null) {
-					//user exists, just do some updates to arn config
-				} else {
-					// we need to create this user
-					CreateUserRequest createUserRequest = new CreateUserRequest().withUserName(userName);
-					CreatePolicyRequest createPolicyRequest = new CreatePolicyRequest().withPolicyName(userName).withPolicyDocument().w
-				}
-				CreateAccessKeyRequest createRequest = new CreateAccessKeyRequest(userName);
-				CreateAccessKeyResult createResult = idManagement.createAccessKey(createRequest);
-				Map<String,String> resultSet = new HashMap<>();
-				resultSet.put("access_key",createResult.getAccessKey().getAccessKeyId());
-				resultSet.put("secret_key",createResult.getAccessKey().getSecretAccessKey());
-				AwsAccessKeyMeta persistedData = new AwsAccessKeyMeta();
+		// 		GetUserResult userResult = idManagement.getUser(new GetUserRequest().withUserName(userName));
+		// 		if(userResult.getUser() != null) {
+		// 			//user exists, just do some updates to arn config
+		// 		} else {
+		// 			// we need to create this user
+		// 			CreateUserRequest createUserRequest = new CreateUserRequest().withUserName(userName);
+		// 			CreatePolicyRequest createPolicyRequest = new CreatePolicyRequest().withPolicyName(userName).withPolicyDocument()
+		// 		}
+		// 		CreateAccessKeyRequest createRequest = new CreateAccessKeyRequest(userName);
+		// 		CreateAccessKeyResult createResult = idManagement.createAccessKey(createRequest);
+		// 		Map<String,String> resultSet = new HashMap<>();
+		// 		resultSet.put("access_key",createResult.getAccessKey().getAccessKeyId());
+		// 		resultSet.put("secret_key",createResult.getAccessKey().getSecretAccessKey());
+		// 		AwsAccessKeyMeta persistedData = new AwsAccessKeyMeta();
 
-				String persistanceKey = path + "/" + relativeKey + "/" + UUID.randomUUID().toString();
-				persistedData.accessKey = createResult.getAccessKey().getAccessKeyId();
-				Gson gson = new GsonBuilder().create();
+		// 		String persistanceKey = path + "/" + relativeKey + "/" + UUID.randomUUID().toString();
+		// 		persistedData.accessKey = createResult.getAccessKey().getAccessKeyId();
+		// 		Gson gson = new GsonBuilder().create();
 
 
-				cypher.write(persistanceKey,gson.toJson(persistedData),leaseTimeout,leaseObjectRef,createdBy);
+		// 		cypher.write(persistanceKey,gson.toJson(persistedData),leaseTimeout,leaseObjectRef,createdBy);
 
-				CypherObject resultObject =  new CypherObject(key,gson.toJson(resultSet),leaseTimeout,leaseObjectRef, createdBy);
-				resultObject.shouldPersist = false;
-				return resultObject;
-			} else {
-				//would be nice to throw like an invalid response back
-				return null;
-			}
+		// 		CypherObject resultObject =  new CypherObject(key,gson.toJson(resultSet),leaseTimeout,leaseObjectRef, createdBy);
+		// 		resultObject.shouldPersist = false;
+		// 		return resultObject;
+		// 	} else {
+		// 		//would be nice to throw like an invalid response back
+		// 		return null;
+		// 	}
 
 
 		}
