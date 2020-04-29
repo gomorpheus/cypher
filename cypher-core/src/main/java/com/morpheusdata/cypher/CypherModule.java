@@ -13,6 +13,12 @@ package com.morpheusdata.cypher;
 public interface CypherModule {
 
 	/**
+	 * Some Modules need the cypher object to query config data. This allows it to be assigned on the constructor
+	 * @param cypher
+	 */
+	public void setCypher(Cypher cypher);
+
+	/**
 	 * The write endpoint is called when any write requests are made toward a modules mount point. Most custom modules
 	 * do not do anything special with write actions and simply pass on a generated CypherObject to be sent to a {@link Datastore}.
 	 * Some exceptions to this may be the use of configuration. It could be used to capture configuration/settings for

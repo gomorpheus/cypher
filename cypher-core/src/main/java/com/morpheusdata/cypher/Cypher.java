@@ -76,6 +76,7 @@ public class Cypher {
 	}
 
 	public void registerModule(String mountPoint, CypherModule module) {
+		module.setCypher(this);
 		mountedModules.put("mountPoint",module);
 	}
 
@@ -179,7 +180,9 @@ public class Cypher {
 			String relativeKey = key.substring(path.length()+1);
 			CypherObject obj = module.read(relativeKey,path, leaseTimeout != null ? leaseTimeout : this.leaseTimeout, leaseObjectRef, createdBy);
 			if(obj != null) {
-				writeCypherObject(obj);
+				if(obj.shouldPersist != false) {
+					writeCypherObject(obj);
+				}
 				return obj;
 			}
 			return null;

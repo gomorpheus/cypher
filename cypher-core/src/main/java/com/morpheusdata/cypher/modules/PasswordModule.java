@@ -1,5 +1,6 @@
 package com.morpheusdata.cypher.modules;
 
+import com.morpheusdata.cypher.Cypher;
 import com.morpheusdata.cypher.CypherMeta;
 import com.morpheusdata.cypher.CypherModule;
 import com.morpheusdata.cypher.CypherObject;
@@ -16,6 +17,16 @@ public class PasswordModule implements CypherModule {
 	private String symbols = "~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
 	private String upperCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private String numbers = "0123456789";
+
+	/**
+	 * Some Modules need the cypher object to query config data. This allows it to be assigned on the constructor
+	 *
+	 * @param cypher
+	 */
+	@Override
+	public void setCypher(Cypher cypher) {
+
+	}
 
 	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		if(value != null && value.length() > 0) {

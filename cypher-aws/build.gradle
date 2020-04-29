@@ -35,8 +35,63 @@ configurations {
  
 
 dependencies {
+    compile project(':cypher-core')
+	compile 'com.google.code.gson:gson:2.4'
     compile("commons-logging:commons-logging:1.1.1")
-    compile('com.bertramlabs.plugins:hcl4j:0.2.2')
+        compile('com.amazonaws:aws-java-sdk:1.11.471') {
+        exclude module: 'aws-java-sdk-simpledb'
+        exclude module: 'aws-java-sdk-servicecatalog'
+        exclude module: 'aws-java-sdk-simpleworkflow'
+        exclude module: 'aws-java-sdk-storagegateway'
+        exclude module: 'aws-java-sdk-kms'
+        exclude module: 'aws-java-sdk-importexport'
+        exclude module: 'aws-java-sdk-sqs'
+        exclude module: 'aws-java-sdk-redshift'
+        exclude module: 'aws-java-sdk-elasticbeanstalk'
+        exclude module: 'aws-java-sdk-datapipeline'
+        exclude module: 'aws-java-sdk-emr'
+        exclude module: 'aws-java-sdk-elasticache'
+        exclude module: 'aws-java-sdk-elastictranscoder'
+        exclude module: 'aws-java-sdk-dynamodb'
+        exclude module: 'aws-java-sdk-sns'
+        exclude module: 'aws-java-sdk-cloudtrail'
+        exclude module: 'aws-java-sdk-cognitoidentity'
+        exclude module: 'aws-java-sdk-cognitosync'
+        exclude module: 'aws-java-sdk-directconnect'
+        exclude module: 'aws-java-sdk-cloudformation'
+        exclude module: 'aws-java-sdk-kinesis'
+        exclude module: 'aws-java-sdk-kinesisvideo'
+        exclude module: 'aws-java-sdk-ses'
+        exclude module: 'aws-java-sdk-autoscaling'
+        exclude module: 'aws-java-sdk-cloudsearch'
+        exclude module: 'aws-java-sdk-cloudwatchmetrics'
+        exclude module: 'aws-java-sdk-cloudwatch'
+        exclude module: 'aws-java-sdk-dynamodb'
+        exclude module: 'aws-java-sdk-swf-libraries'
+        exclude module: 'aws-java-sdk-codedeploy'
+        exclude module: 'aws-java-sdk-codepipeline'
+        exclude module: 'aws-java-sdk-kms'
+        exclude module: 'aws-java-sdk-cloudhsm'
+        exclude module: 'aws-java-sdk-ssm'
+        exclude module: 'aws-java-sdk-workspaces'
+        exclude module: 'aws-java-sdk-machinelearning'
+        exclude module: 'aws-java-sdk-directory'
+        exclude module: 'aws-java-sdk-codecommit'
+        exclude module: 'aws-java-sdk-devicefarm'
+        exclude module: 'aws-java-sdk-elasticsearch'
+        exclude module: 'aws-java-sdk-waf'
+        exclude module: 'aws-java-sdk-marketplacecommerceanalytics'
+        exclude module: 'aws-java-sdk-inspector'
+        exclude module: 'aws-java-sdk-iot'
+        exclude module: 'aws-java-sdk-api-gateway'
+        exclude module: 'aws-java-sdk-gamelift'
+        exclude module: 'aws-java-sdk-dms'
+        exclude module: 'aws-java-sdk-marketplacemeteringservice'
+        exclude module: 'aws-java-sdk-cognitoidp'
+        exclude module: 'aws-java-sdk-discovery'
+        exclude module: 'aws-java-sdk-applicationautoscaling'
+    }
+
     testCompile "org.codehaus.groovy:groovy-all:2.4.1"
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 }
@@ -44,12 +99,12 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
-            artifactId 'cypher-core'
+            artifactId 'cypher-aws'
             pom.withXml {
                 asNode().children().last() + {
                     resolveStrategy = Closure.DELEGATE_FIRST
-                    name 'cypher-core'
-                    description 'Cypher provides secure secret management with triple level encryption and pluggable backends.'
+                    name 'cypher-aws'
+                    description 'Cypher AWS Provides aws secret backends that can be mounted within cypher for key rotation'
                     url 'https://github.com/bertramdev/cypher-core'
                     scm {
                         url 'https://github.com/bertramdev/cypher-core'
@@ -95,7 +150,7 @@ bintray {
     pkg {
         repo = 'gomorpheus'
         userOrg = 'bertramlabs'
-        name = 'cypher-core'
+        name = 'cypher-aws'
         vcsUrl = 'https://github.com/bertramdev/cypher.git'
         licenses = ['Apache-2.0']
     }
@@ -113,7 +168,7 @@ task sourcesJar(type: Jar) {
 
 task morpheusJavaDoc(type: Javadoc) {
   source = sourceSets.main.allJava
-  title = "Cypher Core Docs"
+  title = "Cypher AWS Docs"
 }
 
 task(console, dependsOn: 'classes', type: JavaExec) {

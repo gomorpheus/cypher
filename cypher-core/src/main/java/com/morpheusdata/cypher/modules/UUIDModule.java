@@ -1,5 +1,6 @@
 package com.morpheusdata.cypher.modules;
 
+import com.morpheusdata.cypher.Cypher;
 import com.morpheusdata.cypher.CypherMeta;
 import com.morpheusdata.cypher.CypherModule;
 import com.morpheusdata.cypher.CypherObject;
@@ -9,6 +10,16 @@ import com.morpheusdata.cypher.CypherObject;
  */
 public class UUIDModule implements CypherModule {
 	private CypherMeta cypherMeta;
+
+	/**
+	 * Some Modules need the cypher object to query config data. This allows it to be assigned on the constructor
+	 *
+	 * @param cypher
+	 */
+	@Override
+	public void setCypher(Cypher cypher) {
+
+	}
 
 	public CypherObject write(String relativeKey, String path, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		return null;

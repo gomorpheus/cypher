@@ -12,6 +12,16 @@ import com.morpheusdata.cypher.util.SecurityUtils;
 public class SecretModule implements CypherModule {
 
 	/**
+	 * Some Modules need the cypher object to query config data. This allows it to be assigned on the constructor
+	 *
+	 * @param cypher
+	 */
+	@Override
+	public void setCypher(Cypher cypher) {
+
+	}
+
+	/**
 	 * The endpoint hit during write of a key that simply passes on the user passed value for encryption and storage.
 	 * @param relativeKey the key passed excluding the mount point i.e. if mounted at '/secret' writing to '/secret/hello'
 	 *                    would simply return 'hello'

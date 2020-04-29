@@ -1,1 +1,1 @@
-include 'cypher-core'
+include 'cypher-core', 'cypher-aws'

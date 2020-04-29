@@ -12,6 +12,7 @@ public class CypherObject {
 	public Long leaseTimeout;
 	public String leaseObjectRef;
 	public String createdBy;
+	public Boolean shouldPersist = true;
 
 	public CypherObject(String key, String value, Long leaseTimeout, String leaseObjectRef, String createdBy) {
 		this.value = value;
