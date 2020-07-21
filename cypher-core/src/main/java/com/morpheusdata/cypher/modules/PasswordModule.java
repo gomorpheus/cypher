@@ -13,8 +13,8 @@ import java.security.SecureRandom;
 public class PasswordModule implements CypherModule {
 	private CypherMeta cypherMeta;
 
-	private String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
-	private String symbols = "~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
+	private String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#%^&*()-_=+[{]}\\|;:,<.>/";
+	private String symbols = "~`!@#%^&*()-_=+[{]}\\|;:,<.>/";
 	private String upperCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	private String numbers = "0123456789";
 
