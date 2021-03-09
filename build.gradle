@@ -1,20 +1,80 @@
 buildscript {
 	repositories {
 		mavenLocal()
-		jcenter()
+		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
+		classpath "com.github.jengelman.gradle.plugins:shadow:6.0.0"
+        classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
 	}
 }
 
-subprojects {
-	version = '0.5.1'
+plugins {
+    id 'signing'
+}
+
+// version = '0.5.1'
+group = 'com.morpheusdata'
+
+ext {
+    isBuildSnapshot = version.endsWith('-SNAPSHOT')
+    isReleaseVersion = !isBuildSnapshot
 }
 
 apply plugin: 'groovy'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
 
-group = 'com.bertramlabs.plugins'
+if (isReleaseVersion) {
+    apply plugin: "io.github.gradle-nexus.publish-plugin"
+    nexusPublishing {
+        repositories {
+            sonatype {
+                if(project.hasProperty('mavenMorpheusUser')) {
+                    username = mavenMorpheusUser
+                    password = mavenMorpheusPassword
+                }   
+            }
+        }
+    }
+} else {
+    publishing {
+        repositories {
+            maven {
+                url = "http://nexus.bertramlabs.com/content/repositories/snapshots"
+                if(project.hasProperty('labsNexusUser')) {
+                    credentials {
+                        username = labsNexusUser
+                        password = labsNexusPassword
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+subprojects { project ->
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    afterEvaluate {
+        signing {
+            required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
+            sign publishing.publications.maven
+        }
+    }
+
+    tasks.withType(Sign) {
+        onlyIf { isReleaseVersion }
+    }
+
+    //do not generate extra load on Nexus with new staging repository if signing fails
+    tasks.withType(io.github.gradlenexus.publishplugin.InitializeNexusStagingRepository).configureEach {
+        shouldRunAfter(tasks.withType(Sign))
+    }
+    
+}
 
 repositories {
 	mavenLocal()
@@ -35,9 +95,7 @@ test {
 	}
 }
 
-task wrapper(type: Wrapper) {
-	gradleVersion = '3.3'
-}
+
 tasks.withType(JavaExec) {
     // Assign all Java system properties from
     // the command line to the JavaExec task.
