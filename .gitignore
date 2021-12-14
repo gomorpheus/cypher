@@ -3,3 +3,5 @@ cypher-core/build
 .gradle
 .idea
 cypher-core/test-data/*
+*.iml
+build/

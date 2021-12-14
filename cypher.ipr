@@ -24,7 +24,10 @@
   <component name="DependencyValidationManager">
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
-  <component name="Encoding" addBOMForNewFiles="with NO BOM" />
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$" />
+  </component>
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -39,7 +42,6 @@
             <option value="$PROJECT_DIR$/cypher-core" />
           </set>
         </option>
-        <option name="useAutoImport" value="true" />
       </GradleProjectSettings>
     </option>
   </component>
@@ -197,18 +199,52 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/cypher.iml" filepath="$PROJECT_DIR$/cypher.iml" />
-      <module fileurl="file://$PROJECT_DIR$/cypher-aws/cypher-aws.iml" filepath="$PROJECT_DIR$/cypher-aws/cypher-aws.iml" group="cypher-aws" />
-      <module fileurl="file://$PROJECT_DIR$/cypher-aws/cypher-aws_main.iml" filepath="$PROJECT_DIR$/cypher-aws/cypher-aws_main.iml" group="cypher-aws" />
-      <module fileurl="file://$PROJECT_DIR$/cypher-aws/cypher-aws_test.iml" filepath="$PROJECT_DIR$/cypher-aws/cypher-aws_test.iml" group="cypher-aws" />
-      <module fileurl="file://$PROJECT_DIR$/cypher-core/cypher-core.iml" filepath="$PROJECT_DIR$/cypher-core/cypher-core.iml" group="cypher-core" />
-      <module fileurl="file://$PROJECT_DIR$/cypher-core/cypher-core_main.iml" filepath="$PROJECT_DIR$/cypher-core/cypher-core_main.iml" group="cypher-core" />
-      <module fileurl="file://$PROJECT_DIR$/cypher-core/cypher-core_test.iml" filepath="$PROJECT_DIR$/cypher-core/cypher-core_test.iml" group="cypher-core" />
-      <module fileurl="file://$PROJECT_DIR$/cypher_main.iml" filepath="$PROJECT_DIR$/cypher_main.iml" group="cypher" />
-      <module fileurl="file://$PROJECT_DIR$/cypher_test.iml" filepath="$PROJECT_DIR$/cypher_test.iml" group="cypher" />
+      <module fileurl="file://$PROJECT_DIR$/cypher-aws/cypher.cypher-aws.iml" filepath="$PROJECT_DIR$/cypher-aws/cypher.cypher-aws.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher-aws/cypher.cypher-aws.main.iml" filepath="$PROJECT_DIR$/cypher-aws/cypher.cypher-aws.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher-aws/cypher.cypher-aws.test.iml" filepath="$PROJECT_DIR$/cypher-aws/cypher.cypher-aws.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher-core/cypher.cypher-core.iml" filepath="$PROJECT_DIR$/cypher-core/cypher.cypher-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher-core/cypher.cypher-core.main.iml" filepath="$PROJECT_DIR$/cypher-core/cypher.cypher-core.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher-core/cypher.cypher-core.test.iml" filepath="$PROJECT_DIR$/cypher-core/cypher.cypher-core.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher.main.iml" filepath="$PROJECT_DIR$/cypher.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cypher.test.iml" filepath="$PROJECT_DIR$/cypher.test.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="RemoteRepositoriesConfiguration">
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Maven Central repository" />
+      <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="MavenRepo" />
+      <option name="name" value="MavenRepo" />
+      <option name="url" value="https://repo.maven.apache.org/maven2/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="MavenLocal" />
+      <option name="name" value="MavenLocal" />
+      <option name="url" value="file:$MAVEN_REPOSITORY$/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="BintrayJCenter" />
+      <option name="name" value="BintrayJCenter" />
+      <option name="url" value="https://jcenter.bintray.com/" />
+    </remote-repository>
+  </component>
+  <component name="RunConfigurationProducerService">
+    <option name="ignoredProducers">
+      <set>
+        <option value="com.android.tools.idea.compose.preview.runconfiguration.ComposePreviewRunConfigurationProducer" />
+      </set>
+    </option>
   </component>
   <component name="SvnBranchConfigurationManager">
     <option name="mySupportsUserInfoFilter" value="true" />
@@ -1248,13 +1284,13 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.amazonaws/jmespath-java/1.11.471/497feac614c48db98e0501cf9b0f1e49fa43345c/jmespath-java-1.11.471-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: com.bertramlabs.plugins:hcl4j:0.2.2">
+    <library name="Gradle: com.bertramlabs.plugins:hcl4j:0.3.0">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/com/bertramlabs/plugins/hcl4j/0.2.2/hcl4j-0.2.2.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.bertramlabs.plugins/hcl4j/0.3.0/12521ba6282614b6ad022148c73e25feb03cda7/hcl4j-0.3.0.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/com/bertramlabs/plugins/hcl4j/0.2.2/hcl4j-0.2.2-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.bertramlabs.plugins/hcl4j/0.3.0/ab1c6ef01a616fa68b4bcd6257f35b7b594cf7f9/hcl4j-0.3.0-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0">
@@ -1267,6 +1303,9 @@
       </SOURCES>
     </library>
     <library name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.7">
+      <ANNOTATIONS>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/externalAnnotations/com/fasterxml/jackson/core/jackson-core/2.9.6-an1/jackson-core-2.9.6-an1-annotations.zip!/" />
+      </ANNOTATIONS>
       <CLASSES>
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.6.7/81838e08d5e10e33cdee7299f9682d836b78c63e/jackson-core-2.6.7.jar!/" />
       </CLASSES>
@@ -1276,6 +1315,9 @@
       </SOURCES>
     </library>
     <library name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.2">
+      <ANNOTATIONS>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/externalAnnotations/com/fasterxml/jackson/core/jackson-databind/2.9.6-an1/jackson-databind-2.9.6-an1-annotations.zip!/" />
+      </ANNOTATIONS>
       <CLASSES>
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.6.7.2/7e405a7ea9aa34c8477c10e1ccc023d931e1d76d/jackson-databind-2.6.7.2.jar!/" />
       </CLASSES>

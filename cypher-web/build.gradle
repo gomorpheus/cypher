@@ -1,0 +1,42 @@
+plugins {
+    id("groovy") 
+    id("com.github.johnrengelman.shadow")
+    id("io.micronaut.application") version "3.0.2"
+}
+
+version = "0.1"
+group = "com.morpheusdata.cypher"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    runtime("netty")
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("com.morpheusdata.cypher.*")
+    }
+}
+
+dependencies {
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.groovy:micronaut-runtime-groovy")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    compileOnly("io.micronaut:micronaut-http-validation")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    implementation("io.micronaut:micronaut-validation")
+    implementation project(':cypher-core')
+
+}
+
+
+application {
+    mainClass.set("com.morpheusdata.cypher.Application")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+

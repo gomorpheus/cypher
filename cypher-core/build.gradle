@@ -1,20 +1,12 @@
-buildscript {
-    repositories {
-        mavenLocal()
-    }
-    dependencies {
-    }
-}
 
 
-
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'groovy'
 apply plugin: 'idea'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 group = 'com.morpheusdata'
+ext.isReleaseVersion = !version.endsWith('SNAPSHOT')
 
 repositories {
     mavenLocal()
@@ -31,10 +23,10 @@ java {
 } 
 
 dependencies {
-    compile("commons-logging:commons-logging:1.1.1")
-    compile('com.bertramlabs.plugins:hcl4j:0.3.0')
-    testCompile "org.codehaus.groovy:groovy-all:2.4.1"
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+    compileOnly("commons-logging:commons-logging:1.1.1")
+    implementation('com.bertramlabs.plugins:hcl4j:0.3.0')
+    testImplementation "org.codehaus.groovy:groovy-all:2.4.1"
+    testImplementation "org.spockframework:spock-core:0.7-groovy-2.0"
 }
 
 publishing {
@@ -69,6 +61,19 @@ publishing {
                 }
             }
             from components.java
+        }
+    }
+    repositories {
+        maven {
+            if( !isReleaseVersion ) {
+                url = "http://nexus.bertramlabs.com/content/repositories/snapshots"
+                if(project.hasProperty('labsNexusUser')) {
+                    credentials {
+                        username = labsNexusUser
+                        password = labsNexusPassword
+                    }
+                }
+            }
         }
     }
 }

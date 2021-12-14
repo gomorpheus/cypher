@@ -1,26 +1,13 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        jcenter()
-    }
-    dependencies {
-    }
-}
-
-
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'groovy'
 apply plugin: 'idea'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
-ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
-
-
+group = 'com.morpheusdata'
+ext.isReleaseVersion = !version.endsWith('SNAPSHOT')
 
 repositories {
     mavenLocal()
-    jcenter()
 	mavenCentral()
 }
 
@@ -28,12 +15,16 @@ configurations {
     provided
 }
  
+java {
+    withSourcesJar()
+    withJavadocJar()
+} 
 
 dependencies {
-    compile project(':cypher-core')
-	compile 'com.google.code.gson:gson:2.4'
-    compile("commons-logging:commons-logging:1.1.1")
-        compile('com.amazonaws:aws-java-sdk:1.11.471') {
+    api project(':cypher-core')
+	implementation 'com.google.code.gson:gson:2.4'
+    compileOnly("commons-logging:commons-logging:1.1.1")
+    implementation('com.amazonaws:aws-java-sdk:1.11.471') {
         exclude module: 'aws-java-sdk-simpledb'
         exclude module: 'aws-java-sdk-servicecatalog'
         exclude module: 'aws-java-sdk-simpleworkflow'
@@ -87,8 +78,8 @@ dependencies {
         exclude module: 'aws-java-sdk-applicationautoscaling'
     }
 
-    testCompile "org.codehaus.groovy:groovy-all:2.4.1"
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+    testImplementation "org.codehaus.groovy:groovy-all:2.4.1"
+    testImplementation "org.spockframework:spock-core:0.7-groovy-2.0"
 }
 
 publishing {
@@ -99,12 +90,12 @@ publishing {
                 asNode().children().last() + {
                     resolveStrategy = Closure.DELEGATE_FIRST
                     name 'cypher-aws'
-                    description 'Cypher AWS Provides aws secret backends that can be mounted within cypher for key rotation'
-                    url 'https://github.com/bertramdev/cypher-core'
+                    description 'Cypher provides secure secret management with triple level encryption and pluggable backends.'
+                    url 'https://github.com/gomorpheus/cypher'
                     scm {
-                        url 'https://github.com/bertramdev/cypher-core'
-                        connection 'scm:https://bertramdev@github.com/bertramdev/cypher-core.git'
-                        developerConnection 'scm:git://github.com/bertramdev/cypher-core.git'
+                        url 'https://github.com/gomorpheus/cypher'
+                        connection 'scm:https://git@github.com/gomorpheus/cypher.git'
+                        developerConnection 'scm:git://github.com/gomorpheus/cypher.git'
                     }
                     licenses {
                         license {
@@ -125,6 +116,19 @@ publishing {
             from components.java
         }
     }
+    repositories {
+        maven {
+            if( !isReleaseVersion ) {
+                url = "http://nexus.bertramlabs.com/content/repositories/snapshots"
+                if(project.hasProperty('labsNexusUser')) {
+                    credentials {
+                        username = labsNexusUser
+                        password = labsNexusPassword
+                    }
+                }
+            }
+        }
+    }
 }
 
 sourceSets {
@@ -133,17 +137,6 @@ sourceSets {
     }
 }
 
-
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
 
 task morpheusJavaDoc(type: Javadoc) {
   source = sourceSets.main.allJava
