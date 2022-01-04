@@ -8,7 +8,7 @@ import com.morpheusdata.cypher.modules.UUIDModule;
 import com.morpheusdata.cypher.util.SecurityUtils;
 
 import javax.crypto.KeyGenerator;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;

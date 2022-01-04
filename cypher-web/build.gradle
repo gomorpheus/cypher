@@ -23,11 +23,13 @@ micronaut {
 dependencies {
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.groovy:micronaut-runtime-groovy")
+    implementation('org.codehaus.groovy:groovy-json:3.0.9')
     implementation("jakarta.annotation:jakarta.annotation-api")
     compileOnly("io.micronaut:micronaut-http-validation")
     runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
     implementation project(':cypher-core')
+    implementation('com.bertramlabs.plugins:hcl4j:0.4.4')
 
 }
 
@@ -35,6 +37,9 @@ dependencies {
 application {
     mainClass.set("com.morpheusdata.cypher.Application")
 }
+
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1','-Dmicronaut.environments=development')
+
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
     targetCompatibility = JavaVersion.toVersion("11")

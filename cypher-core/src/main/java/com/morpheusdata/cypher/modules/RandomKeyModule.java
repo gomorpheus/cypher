@@ -8,7 +8,7 @@ import com.morpheusdata.cypher.CypherObject;
 import com.morpheusdata.cypher.exception.EncoderException;
 
 import javax.crypto.KeyGenerator;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import java.security.SecureRandom;
 import java.text.NumberFormat;
 
