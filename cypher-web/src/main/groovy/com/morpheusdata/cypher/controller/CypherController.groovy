@@ -6,6 +6,7 @@ import com.morpheusdata.cypher.CypherObject
 import com.morpheusdata.cypher.model.CypherItem
 import com.morpheusdata.cypher.model.CypherItemObject
 import com.morpheusdata.cypher.model.CypherItemString
+import com.morpheusdata.cypher.model.CypherList
 import com.morpheusdata.cypher.service.CypherService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -27,13 +28,14 @@ import jakarta.inject.Inject
 class CypherController {
     @Inject CypherService cypherService
 
-    @Get("/")
-    def index(HttpRequest request) {
-        Boolean list = request.parameters.get("list") == "true" ?: false
+    @Get("/{?list}")
+    HttpResponse<CypherList> index(HttpRequest request, @QueryValue @Nullable Boolean list) {
 
         String token = getToken(request)
         if(list) {
-            cypherService.listKeys(token,null)
+            CypherList cypherList = new CypherList()
+            cypherList.keys = cypherService.listKeys(token,"/")
+            return HttpResponse.ok(cypherList)
         } else {
             show(request,"")
         }
