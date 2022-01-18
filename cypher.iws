@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="d45c3346-c3ae-47a9-b5dd-834035f863dc" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/cypher-web/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/cypher-web/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cypher.iws" beforeDir="false" afterPath="$PROJECT_DIR$/cypher.iws" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -385,7 +384,7 @@
       <workItem from="1641222779448" duration="17955000" />
       <workItem from="1641484780054" duration="3081000" />
       <workItem from="1641911957586" duration="1880000" />
-      <workItem from="1642514320771" duration="6883000" />
+      <workItem from="1642514320771" duration="7131000" />
     </task>
     <servers />
   </component>
