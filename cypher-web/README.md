@@ -45,3 +45,6 @@ start on `http://localhost:8080`. This can be configured with the `-Dmicronaut.s
 **NOTE:** Please pay attention to the first time startup log. The initial `root` access token is provided for consuming
 the api.
 
+Consuming the REST API happens at the `/v1` url prefix. Authorization is performed by passing the access key in a header as either `X-CYPHER-TOKEN` or `X-VAULT-TOKEN` for compatibility.
+
+a POST request to a path will generate a key based on the path and the contents will be the POST Body. This Body can be sent as json, a string, or even an HCL body
