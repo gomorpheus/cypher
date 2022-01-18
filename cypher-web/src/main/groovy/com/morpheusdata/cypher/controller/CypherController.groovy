@@ -15,7 +15,9 @@ import groovy.util.logging.Slf4j
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Consumes
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
@@ -69,16 +71,39 @@ class CypherController {
     }
 
     @Post("{/path:.+}{?leaseTimeout,ttl,type}")
+    @Consumes([MediaType.APPLICATION_JSON,"application/hcl"])
     HttpResponse<CypherItem> save(HttpRequest request, @Nullable @PathVariable String path, @Nullable @QueryValue Long leaseTimeout, @Nullable @QueryValue String ttl, @Nullable @QueryValue String type, @Body @Nullable String bodyText) {
         String token = getToken(request)
         try {
             if(request.getContentType().get().toString() == 'application/hcl') {
 
                 Map hclParsedRequest = new HCLParser().parse(bodyText)
+                log.info("Parsed HCL: ${hclParsedRequest}")
                 ObjectMapper mapper = new ObjectMapper()
                 String jsonBody = mapper.writeValueAsString(hclParsedRequest)
                 Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (hclParsedRequest?.ttl as String))
+                String dataType
+                String keyValue
+                if (type == 'string') {
+                    dataType = 'string'
+                    if (jsonBody?.value) {
+                        keyValue = jsonBody?.value?.toString()
+                    } else if (jsonBody?.data) {
+                        keyValue = jsonBody?.data?.toString()
+                    }
+                } else if (jsonBody != null) {
+                    dataType = 'object'
+                    keyValue = new JsonOutput().toJson(jsonBody)
+                }
+                CypherObject cypherObject = cypherService.write(token,path,keyValue,parsedLeaseTimeout)
+                Long calculatedLeaseTimeout = cypherObject.leaseTimeout
+                def cypherData = parseCypherData(cypherObject)
+                if(cypherData.dataType == 'string') {
+                    return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
 
+                } else {
+                    return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
+                }
             } else if(request.getContentType().get().toString() == 'application/json') {
                 def jsonBody = new JsonSlurper().parseText(bodyText)
                 Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (jsonBody?.ttl as String))
@@ -107,6 +132,8 @@ class CypherController {
             }
         } catch(UnauthorizedException unauthorizedE) {
          return HttpResponse.unauthorized()
+        } catch(Exception ex) {
+            log.error("Error Processing Request, {}",ex.message,ex)
         }
     }
 
