@@ -7,6 +7,7 @@ import com.morpheusdata.cypher.model.CypherItem
 import com.morpheusdata.cypher.model.CypherItemObject
 import com.morpheusdata.cypher.model.CypherItemString
 import com.morpheusdata.cypher.model.CypherList
+import com.morpheusdata.cypher.model.UnauthorizedException
 import com.morpheusdata.cypher.service.CypherService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -45,58 +46,68 @@ class CypherController {
     HttpResponse<CypherItem> show(HttpRequest request, @Nullable @PathVariable String path, @Nullable @QueryValue Long leaseTimeout, @Nullable @QueryValue String ttl) {
         String token = getToken(request)
         Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl)
+        try {
+            CypherObject cypherObject = cypherService.read(token,path,parsedLeaseTimeout)
+            Long calculatedLeaseTimeout = cypherObject?.leaseTimeout
+            if(cypherObject) {
+                def cypherData = parseCypherData(cypherObject)
+                if(cypherData.dataType == 'string') {
+                    return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
 
-        CypherObject cypherObject = cypherService.read(token,path,parsedLeaseTimeout)
-        Long calculatedLeaseTimeout = cypherObject.leaseTimeout
-        def cypherData = parseCypherData(cypherObject)
-        if(cypherData.dataType == 'string') {
-            return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
-
-        } else {
-            return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
+                } else {
+                    return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
+                }
+            } else {
+                return HttpResponse.notFound()
+            }
+        } catch(UnauthorizedException unauthorizedE) {
+            return HttpResponse.unauthorized()
         }
+
+
 
     }
 
     @Post("{/path:.+}{?leaseTimeout,ttl,type}")
     HttpResponse<CypherItem> save(HttpRequest request, @Nullable @PathVariable String path, @Nullable @QueryValue Long leaseTimeout, @Nullable @QueryValue String ttl, @Nullable @QueryValue String type, @Body @Nullable String bodyText) {
         String token = getToken(request)
+        try {
+            if(request.getContentType().get().toString() == 'application/hcl') {
 
-        if(request.getContentType().get().toString() == 'application/hcl') {
+                Map hclParsedRequest = new HCLParser().parse(bodyText)
+                ObjectMapper mapper = new ObjectMapper()
+                String jsonBody = mapper.writeValueAsString(hclParsedRequest)
+                Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (hclParsedRequest?.ttl as String))
 
-            Map hclParsedRequest = new HCLParser().parse(bodyText)
-            ObjectMapper mapper = new ObjectMapper()
-            String jsonBody = mapper.writeValueAsString(hclParsedRequest)
-            Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (hclParsedRequest?.ttl as String))
-
-        } else if(request.getContentType().get().toString() == 'application/json') {
-            def jsonBody = new JsonSlurper().parseText(bodyText)
-            Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (jsonBody?.ttl as String))
-            String dataType
-            String keyValue
-            if (type == 'string') {
-                dataType = 'string'
-                if (jsonBody?.value) {
-                    keyValue = jsonBody?.value?.toString()
-                } else if (jsonBody?.data) {
-                    keyValue = jsonBody?.data?.toString()
+            } else if(request.getContentType().get().toString() == 'application/json') {
+                def jsonBody = new JsonSlurper().parseText(bodyText)
+                Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (jsonBody?.ttl as String))
+                String dataType
+                String keyValue
+                if (type == 'string') {
+                    dataType = 'string'
+                    if (jsonBody?.value) {
+                        keyValue = jsonBody?.value?.toString()
+                    } else if (jsonBody?.data) {
+                        keyValue = jsonBody?.data?.toString()
+                    }
+                } else if (jsonBody != null) {
+                    dataType = 'object'
+                    keyValue = new JsonOutput().toJson(jsonBody)
                 }
-            } else if (jsonBody != null) {
-                dataType = 'object'
-                keyValue = new JsonOutput().toJson(jsonBody)
-            }
-            CypherObject cypherObject = cypherService.write(token,path,keyValue,parsedLeaseTimeout)
-            Long calculatedLeaseTimeout = cypherObject.leaseTimeout
-            def cypherData = parseCypherData(cypherObject)
-            if(cypherData.dataType == 'string') {
-                return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
+                CypherObject cypherObject = cypherService.write(token,path,keyValue,parsedLeaseTimeout)
+                Long calculatedLeaseTimeout = cypherObject.leaseTimeout
+                def cypherData = parseCypherData(cypherObject)
+                if(cypherData.dataType == 'string') {
+                    return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
 
-            } else {
-                return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
+                } else {
+                    return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
+                }
             }
+        } catch(UnauthorizedException unauthorizedE) {
+         return HttpResponse.unauthorized()
         }
-
-        //cypherService.write(token,path)
     }
 
     @Delete("{/path:.+}")
