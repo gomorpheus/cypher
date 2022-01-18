@@ -7,6 +7,7 @@ import com.morpheusdata.cypher.model.CypherItem
 import com.morpheusdata.cypher.model.CypherItemObject
 import com.morpheusdata.cypher.model.CypherItemString
 import com.morpheusdata.cypher.model.CypherList
+import com.morpheusdata.cypher.model.NotAllowedException
 import com.morpheusdata.cypher.model.UnauthorizedException
 import com.morpheusdata.cypher.service.CypherService
 import groovy.json.JsonOutput
@@ -15,6 +16,7 @@ import groovy.util.logging.Slf4j
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Consumes
@@ -33,15 +35,21 @@ class CypherController {
 
     @Get("/{?list}")
     HttpResponse<CypherList> index(HttpRequest request, @QueryValue @Nullable Boolean list) {
-
-        String token = getToken(request)
-        if(list) {
-            CypherList cypherList = new CypherList()
-            cypherList.keys = cypherService.listKeys(token,"/")
-            return HttpResponse.ok(cypherList)
-        } else {
-            show(request,"")
+        try {
+            String token = getToken(request)
+            if(list) {
+                CypherList cypherList = new CypherList()
+                cypherList.keys = cypherService.listKeys(token,"/")
+                return HttpResponse.ok(cypherList)
+            } else {
+                show(request,"")
+            }
+        } catch(UnauthorizedException unauthorizedE) {
+            return HttpResponse.unauthorized()
+        } catch(NotAllowedException notAllowedE) {
+            return HttpResponse.status(HttpStatus.FORBIDDEN)
         }
+
     }
 
     @Get("{/path:.*}")
@@ -64,6 +72,8 @@ class CypherController {
             }
         } catch(UnauthorizedException unauthorizedE) {
             return HttpResponse.unauthorized()
+        } catch(NotAllowedException notAllowedE) {
+            return HttpResponse.status(HttpStatus.FORBIDDEN)
         }
 
 
@@ -82,19 +92,10 @@ class CypherController {
                 ObjectMapper mapper = new ObjectMapper()
                 String jsonBody = mapper.writeValueAsString(hclParsedRequest)
                 Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl ?: (hclParsedRequest?.ttl as String))
-                String dataType
-                String keyValue
-                if (type == 'string') {
-                    dataType = 'string'
-                    if (jsonBody?.value) {
-                        keyValue = jsonBody?.value?.toString()
-                    } else if (jsonBody?.data) {
-                        keyValue = jsonBody?.data?.toString()
-                    }
-                } else if (jsonBody != null) {
-                    dataType = 'object'
-                    keyValue = new JsonOutput().toJson(jsonBody)
-                }
+                String dataType = 'object'
+                String keyValue = jsonBody
+
+
                 CypherObject cypherObject = cypherService.write(token,path,keyValue,parsedLeaseTimeout)
                 Long calculatedLeaseTimeout = cypherObject.leaseTimeout
                 def cypherData = parseCypherData(cypherObject)
@@ -132,6 +133,8 @@ class CypherController {
             }
         } catch(UnauthorizedException unauthorizedE) {
          return HttpResponse.unauthorized()
+        } catch(NotAllowedException notAllowedE) {
+            return HttpResponse.status(HttpStatus.FORBIDDEN)
         } catch(Exception ex) {
             log.error("Error Processing Request, {}",ex.message,ex)
         }
@@ -139,9 +142,18 @@ class CypherController {
 
     @Delete("{/path:.+}")
     HttpResponse delete(HttpRequest request, @Nullable @PathVariable String path) {
-        String token = getToken(request)
-        cypherService.delete(token,path)
-        return HttpResponse.ok()
+        try {
+            String token = getToken(request)
+            cypherService.delete(token,path)
+            return HttpResponse.ok()
+        } catch(UnauthorizedException unauthorizedE) {
+            return HttpResponse.unauthorized()
+        } catch(NotAllowedException notAllowedE) {
+            return HttpResponse.status(HttpStatus.FORBIDDEN)
+        } catch(Exception ex) {
+            log.error("Error Processing Request, {}",ex.message,ex)
+        }
+
     }
 
     protected String getToken(HttpRequest request) {

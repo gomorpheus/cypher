@@ -6,6 +6,7 @@ import com.morpheusdata.cypher.Cypher
 import com.morpheusdata.cypher.CypherObject
 import com.morpheusdata.cypher.config.CypherConfig
 import com.morpheusdata.cypher.datastores.FlatFileDatastore
+import com.morpheusdata.cypher.model.NotAllowedException
 import com.morpheusdata.cypher.model.Passwd
 import com.morpheusdata.cypher.model.Policy
 import com.morpheusdata.cypher.model.PolicyInfo
@@ -24,16 +25,16 @@ class CypherService {
     @Inject CypherConfig cypherConfig
     Cypher cypher
 
-    List<String> listKeys(String vaultToken, String pattern) throws UnauthorizedException {
+    List<String> listKeys(String vaultToken, String pattern) throws UnauthorizedException,NotAllowedException {
         if(isAccessAllowedForToken("",vaultToken,'list')) {
             return cypher.listKeys(pattern)?.findAll({!it.startsWith("sys/")})
         } else {
-            //TODO: Throw Exception for Access Denied?
+            throw new NotAllowedException("Not allowed to 'list'")
             return null
         }
     }
 
-    CypherObject read(String vaultToken, String key, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException {
+    CypherObject read(String vaultToken, String key, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException, NotAllowedException {
         if(isAccessAllowedForToken(key,vaultToken,'read')) {
             CypherObject cypherObject = cypher.read(key,leaseTimeout, createdBy)
             if(createdBy && cypherObject.createdBy && cypherObject.createdBy != createdBy) {
@@ -42,17 +43,17 @@ class CypherService {
             return cypherObject
         } else {
             log.info(":Access Denied)")
-            //TODO: Throw Exception for Access Denied?
+            throw new NotAllowedException("Not allowed to 'read'")
             return null
         }
     }
 
-    CypherObject write(String vaultToken, String key, String value, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException {
+    CypherObject write(String vaultToken, String key, String value, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException, NotAllowedException {
         if(isAccessAllowedForToken(key,vaultToken,'write')) {
             return cypher.write(key, value, leaseTimeout, null, createdBy)
         } else {
+            throw new NotAllowedException("Not allowed to 'write'")
             log.info("Access Denied")
-            //TODO: Throw Exception for Access Denied?
             return null
         }
     }
@@ -61,10 +62,12 @@ class CypherService {
         read(key, leaseTimeout, createdBy)?.value
     }
 
-    Boolean delete(String vaultToken, String key) throws UnauthorizedException {
+    Boolean delete(String vaultToken, String key) throws UnauthorizedException, NotAllowedException {
         if(isAccessAllowedForToken(key,vaultToken,'delete')) {
             return cypher.delete(key)
         } else {
+            throw new NotAllowedException("Not allowed to 'delete'")
+
             return false
         }
     }
