@@ -20,6 +20,10 @@ micronaut {
     }
 }
 
+dockerBuild {
+    images = ["morpheusdata/cypher:$project.version","morpheusdata/cypher:latest"]
+}
+
 dependencies {
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.groovy:micronaut-runtime-groovy")
