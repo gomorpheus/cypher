@@ -42,17 +42,18 @@ class CypherController {
     }
 
     @Get("{/path:.*}")
-    HttpResponse<CypherItem> show(HttpRequest request, @Nullable @PathVariable String path) {
+    HttpResponse<CypherItem> show(HttpRequest request, @Nullable @PathVariable String path, @Nullable @QueryValue Long leaseTimeout, @Nullable @QueryValue String ttl) {
         String token = getToken(request)
-        log.info("Getting Key: ${token} ${path}")
-        CypherObject cypherObject = cypherService.read(token,path)
+        Long parsedLeaseTimeout = parseLeaseTimeout(leaseTimeout,ttl)
+
+        CypherObject cypherObject = cypherService.read(token,path,parsedLeaseTimeout)
+        Long calculatedLeaseTimeout = cypherObject.leaseTimeout
         def cypherData = parseCypherData(cypherObject)
         if(cypherData.dataType == 'string') {
-            log.info("Cypher Data: ${cypherData} - ${cypherObject?.toMap()}")
-            return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String))
+            return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
 
         } else {
-            return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data))
+            return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
         }
 
     }
@@ -85,13 +86,13 @@ class CypherController {
                 keyValue = new JsonOutput().toJson(jsonBody)
             }
             CypherObject cypherObject = cypherService.write(token,path,keyValue,parsedLeaseTimeout)
+            Long calculatedLeaseTimeout = cypherObject.leaseTimeout
             def cypherData = parseCypherData(cypherObject)
             if(cypherData.dataType == 'string') {
-                log.info("Cypher Data: ${cypherData} - ${cypherObject?.toMap()}")
-                return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String))
+                return HttpResponse.ok(new CypherItemString(dataType: cypherData.dataType, data: cypherData.data as String, leaseTimeout: calculatedLeaseTimeout))
 
             } else {
-                return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data))
+                return HttpResponse.ok(new CypherItemObject(dataType: cypherData.dataType, data: cypherData.data, leaseTimeout: calculatedLeaseTimeout))
             }
         }
 

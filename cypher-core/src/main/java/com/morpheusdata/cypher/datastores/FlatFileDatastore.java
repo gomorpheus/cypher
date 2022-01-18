@@ -43,7 +43,6 @@ public class FlatFileDatastore implements Datastore {
 			Map<String,Map<String,String>> dataSet = readFile(hash);
 			Map<String,String> result = dataSet.get(realKey);
 			if(result != null) {
-				System.out.println("Creating Cypher Value: ");
 				return CypherValue.fromMap(result);
 			}
 		} catch(Exception ex) {
@@ -96,7 +95,7 @@ public class FlatFileDatastore implements Datastore {
 						String leaseTimeoutString = dataSet.get(key).get("leaseExpireTime");
 						if(leaseTimeoutString != null) {
 							Long leaseTimeout = new Long(leaseTimeoutString);
-							if(leaseTimeout < now.getTime()) {
+							if(leaseTimeout != 0 && leaseTimeout < now.getTime()) {
 								String realKey = key.substring(cypherId.length() + 1);
 								keys.add(realKey);
 							}
@@ -104,6 +103,7 @@ public class FlatFileDatastore implements Datastore {
 					}
 				}
 			}
+
 			return keys;
 		} catch(Exception ex) {
 			throw new DatastoreException("An Error Occurred while trying to list known keys in a Datastore.",ex);
@@ -185,7 +185,6 @@ public class FlatFileDatastore implements Datastore {
 
 	protected Map<String,Map<String,String>> readFile(String hash) throws IOException, ClassNotFoundException {
 		Object lockObj = getLockObject(hash);
-		System.out.println("Reading File: " + hash);
 
 		File file = new File(this.basePath,hash);
 		String fileLocation = file.getCanonicalPath();
@@ -197,14 +196,12 @@ public class FlatFileDatastore implements Datastore {
 			ObjectInputStream ois = new ObjectInputStream(fis);
 
 			Map<String,Map<String,String>> result = (Map<String,Map<String,String>>)ois.readObject();
-			System.out.println("Reading Object: " + hash +  "value " + result);
 			return result;
 		}
 	}
 
 	protected void writeFile(String hash, Map<String,Map<String,String>> data) throws IOException, ClassNotFoundException  {
 		Object lockObj = getLockObject(hash);
-		System.out.println("Writing File: " + hash + " With Data: " + data);
 		File file = new File(this.basePath,hash);
 		String fileLocation = file.getCanonicalPath();
 		if(!file.exists()) {

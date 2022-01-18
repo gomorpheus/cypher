@@ -29,7 +29,9 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
     implementation project(':cypher-core')
+
     implementation('com.bertramlabs.plugins:hcl4j:0.4.4')
+    testImplementation("ch.qos.logback:logback-classic")
 
 }
 

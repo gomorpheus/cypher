@@ -1,10 +1,7 @@
 package com.morpheusdata.cypher;
 
 import com.morpheusdata.cypher.exception.EncoderException;
-import com.morpheusdata.cypher.modules.PasswordModule;
-import com.morpheusdata.cypher.modules.RandomKeyModule;
-import com.morpheusdata.cypher.modules.SecretModule;
-import com.morpheusdata.cypher.modules.UUIDModule;
+import com.morpheusdata.cypher.modules.*;
 import com.morpheusdata.cypher.util.SecurityUtils;
 
 import javax.crypto.KeyGenerator;
@@ -70,14 +67,16 @@ public class Cypher {
 	public void registerDefaultModules() {
 		this.mountedModules = new HashMap<>();
 		mountedModules.put("secret",new SecretModule());
+		mountedModules.put("sys",new SecretModule());
 		mountedModules.put("uuid",new UUIDModule());
 		mountedModules.put("key",new RandomKeyModule());
 		mountedModules.put("password",new PasswordModule());
+		mountedModules.put("vault",new VaultModule());
 	}
 
 	public void registerModule(String mountPoint, CypherModule module) {
 		module.setCypher(this);
-		mountedModules.put("mountPoint",module);
+		mountedModules.put(mountPoint,module);
 	}
 
 	public void deregisterModule(String mountPoint) {

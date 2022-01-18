@@ -31,7 +31,11 @@ public class CypherValue {
 		map.put("key",key);
 		map.put("createdBy",createdBy);
 		map.put("leaseTimeout",leaseTimeout.toString());
-		map.put("leaseExpireTime",new Long((new Date().getTime() + leaseTimeout)).toString());
+		if(leaseTimeout != null && leaseTimeout > 0) {
+			map.put("leaseExpireTime",new Long((new Date().getTime() + leaseTimeout)).toString());
+		} else {
+			map.put("leaseExpireTime","0");
+		}
 		map.put("leaseObjectRef",leaseObjectRef);
 		return map;
 	}

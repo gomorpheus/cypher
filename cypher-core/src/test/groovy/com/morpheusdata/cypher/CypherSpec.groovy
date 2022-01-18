@@ -5,7 +5,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import javax.crypto.KeyGenerator
-import javax.xml.bind.DatatypeConverter
+import jakarta.xml.bind.DatatypeConverter
 import java.security.SecureRandom
 
 /**

@@ -1,12 +1,18 @@
 package com.morpheusdata.cypher.service
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.morpheusdata.cypher.Cypher
 import com.morpheusdata.cypher.CypherObject
 import com.morpheusdata.cypher.config.CypherConfig
 import com.morpheusdata.cypher.datastores.FlatFileDatastore
+import com.morpheusdata.cypher.model.Passwd
 import com.morpheusdata.cypher.model.Policy
 import com.morpheusdata.cypher.model.PolicyInfo
+import com.morpheusdata.cypher.model.Token
+import com.morpheusdata.cypher.model.UnauthorizedException
+import com.morpheusdata.cypher.modules.SysModule
+import groovy.json.JsonOutput
 import groovy.util.logging.Slf4j
 import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
@@ -18,19 +24,17 @@ class CypherService {
     @Inject CypherConfig cypherConfig
     Cypher cypher
 
-    List<String> listKeys(String vaultToken, String pattern) {
-        String policyName = getPolicyForToken(vaultToken)
-        if(isAccessAllowed(pattern,policyName,'list')) {
-            return cypher.listKeys(pattern)
+    List<String> listKeys(String vaultToken, String pattern) throws UnauthorizedException {
+        if(isAccessAllowedForToken("",vaultToken,'list')) {
+            return cypher.listKeys(pattern)?.findAll({!it.startsWith("sys/")})
         } else {
             //TODO: Throw Exception for Access Denied?
             return null
         }
     }
 
-    CypherObject read(String vaultToken, String key, Long leaseTimeout = null, String createdBy = null) {
-        String policyName = getPolicyForToken(vaultToken)
-        if(isAccessAllowed(key,policyName,'read')) {
+    CypherObject read(String vaultToken, String key, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException {
+        if(isAccessAllowedForToken(key,vaultToken,'read')) {
             CypherObject cypherObject = cypher.read(key,leaseTimeout, createdBy)
             if(createdBy && cypherObject.createdBy && cypherObject.createdBy != createdBy) {
                 return null
@@ -43,9 +47,8 @@ class CypherService {
         }
     }
 
-    CypherObject write(String vaultToken, String key, String value, Long leaseTimeout = null, String createdBy = null) {
-        String policyName = getPolicyForToken(vaultToken)
-        if(isAccessAllowed(key,policyName,'write')) {
+    CypherObject write(String vaultToken, String key, String value, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException {
+        if(isAccessAllowedForToken(key,vaultToken,'write')) {
             return cypher.write(key, value, leaseTimeout, null, createdBy)
         } else {
             log.info("Access Denied")
@@ -54,24 +57,58 @@ class CypherService {
         }
     }
 
-    String readValue(String key, Long leaseTimeout = null, String createdBy = null) {
+    String readValue(String key, Long leaseTimeout = null, String createdBy = null) throws UnauthorizedException {
         read(key, leaseTimeout, createdBy)?.value
     }
 
-    Boolean delete(String vaultToken, String key) {
-        String policyName = getPolicyForToken(vaultToken)
-        if(isAccessAllowed(key,policyName,'delete')) {
+    Boolean delete(String vaultToken, String key) throws UnauthorizedException {
+        if(isAccessAllowedForToken(key,vaultToken,'delete')) {
             return cypher.delete(key)
         } else {
             return false
         }
     }
 
-    String getPolicyForToken(String vaultToken) {
-        String tokenInfo = cypher.read("sys/tokens/${vaultToken}")?.value
-        //TODO: Token info model
-        return 'default'
+    Boolean isAccessAllowedForToken(String path, String vaultToken, String accessType) throws UnauthorizedException {
+        Collection<String> policyNames = getPoliciesForToken(vaultToken)
+        for(String policyName in policyNames) {
+            if(isAccessAllowed(path,policyName,accessType)) {
+                return true
+            }
+        }
+        return false
     }
+
+    Collection<String> getPoliciesForToken(String vaultToken) throws UnauthorizedException {
+        CypherObject passwdObj = cypher.read("sys/passwd")
+        if(passwdObj) {
+            List<Passwd> passwdInfo = new ObjectMapper().readValue(passwdObj.value, new TypeReference<List<Passwd>>(){})
+            if(passwdInfo) {
+                String tokenId = passwdInfo.find{it.token == vaultToken}?.id
+                if(tokenId) {
+                    CypherObject obj = cypher.read("sys/tokens/${tokenId}")
+                    if(obj) {
+                        Token token = new ObjectMapper().readValue(obj.value,Token)
+                        return token.policies
+                    } else {
+                        throw new UnauthorizedException("Authorization Token Details Missing")
+                        return null
+                    }
+                } else {
+                    throw new UnauthorizedException("Authorization Token Invalid")
+                    //invalid token
+                }
+            }
+        } else {
+            throw new UnauthorizedException("Authorization Token Invalid. No Tokens Configured.")
+            //invalid token
+        }
+
+
+        return null
+    }
+
+
 
     Boolean isAccessAllowed(String path, String policyName, String accessType) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -84,8 +121,18 @@ class CypherService {
             //Default isnt set so assume full access for default policy
             policy = new Policy()
             PolicyInfo policyInfo = new PolicyInfo()
-            policyInfo.capabilities = ["read","write","list","delete","update"]
+            policyInfo.capabilities = ["read", "write", "list", "delete", "update"]
             policy.path = ['/.*': policyInfo]
+            log.info("Writing default policy")
+            def result = cypher.write("sys/policies/default", objectMapper.writeValueAsString(policy), 0, null, null)
+            log.info("Write Result: ${result}")
+        } else if(!policyString && policyName == 'root') {
+            //Root isnt set so assume full access for root policy
+            policy = new Policy()
+            PolicyInfo policyInfo = new PolicyInfo()
+            policyInfo.capabilities = ["read", "write", "list", "delete", "update","sudo"]
+            policy.path = ['/.*': policyInfo]
+            def result = cypher.write("sys/policies/root", objectMapper.writeValueAsString(policy), 0, null, null)
         } else if (policyString) {
             policy = objectMapper.readValue(policyString, Policy)
         } else {
@@ -204,6 +251,41 @@ class CypherService {
     @PostConstruct
     void initializeCypherEngine() {
         cypher = new Cypher("cypher", new FlatFileDatastore(cypherConfig.storageLocation))
+        cypher.registerModule("sys",new SysModule())
         cypher.setMasterKey(cypherConfig.masterKey)
+        //create root token
+        log.info("Root Data: ${cypher.read("sys/passwd")}")
+        if(cypher.read("sys/passwd") == null) {
+            //we need a root token initialized
+            Token token = createToken(["root"],0)
+            log.info("Initialized Root Token: ${token.token} ... Write this down as it will only display once")
+        }
+
     }
+
+
+    Token createToken(Collection<String> policies, Long ttl) {
+        Token token = new Token(id: UUID.randomUUID().toString(), token: UUID.randomUUID().toString(), ttl: ttl, policies: policies)
+        if(ttl) {
+            token.expires = new Date(new Date().time + ttl)
+        }
+        cypher.write("sys/tokens/${token.id}", new ObjectMapper().writeValueAsString(token),ttl,null,null)
+        return token
+    }
+
+    Token renewToken(String vaultToken) {
+        CypherObject data = cypher.read("sys/tokens/${vaultToken}")
+        Token token = new ObjectMapper().readValue(data.value,Token)
+        if(token.ttl) {
+            token.expires = new Date(new Date().time + token.ttl)
+        }
+        cypher.write("sys/tokens/${token.token}", new ObjectMapper().writeValueAsString(token),token.ttl,null,null)
+        return token
+    }
+
+    Boolean revokeToken(String vaultToken, String revokeToken) {
+        delete(vaultToken,"sys/tokens/${revokeToken}")
+    }
+
+
 }

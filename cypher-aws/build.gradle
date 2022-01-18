@@ -77,6 +77,7 @@ dependencies {
         exclude module: 'aws-java-sdk-discovery'
         exclude module: 'aws-java-sdk-applicationautoscaling'
     }
+    implementation('com.bertramlabs.plugins:hcl4j:0.4.4')
 
     testImplementation "org.codehaus.groovy:groovy-all:2.4.1"
     testImplementation "org.spockframework:spock-core:0.7-groovy-2.0"
