@@ -30,20 +30,22 @@ public class VaultModule implements CypherModule {
                 key = path + "/" + key;
             }
             if(relativeKey.startsWith("config/")) {
-
-                return new CypherObject(key,value,leaseTimeout, leaseObjectRef, createdBy);
+                System.out.println("Writing to : " + key);
+                return new CypherObject(key,value,0l, leaseObjectRef, createdBy);
             } else {
                 String vaultUrl = cypher.read("vault/config/url").value;
                 String vaultToken = cypher.read("vault/config/token").value;
 
                 //we gotta fetch from Vault
-                String vaultPath="/v1/${relativeKey}";
+                String vaultPath="v1/" + relativeKey;
                 //TODO: HTTP Client time
                 //TODO: Send to Vault
                 RestApiUtil.RestOptions restOptions = new RestApiUtil.RestOptions();
                 restOptions.headers = new LinkedHashMap<>();
                 restOptions.headers.put("X-VAULT-TOKEN",vaultToken);
                 restOptions.contentType = "application/json";
+
+                restOptions.body = "{\"data\": " + value + "}";
 //                restOptions.body =
                 try {
                     ServiceResponse resp = RestApiUtil.callApi(vaultUrl,vaultPath,null,null,restOptions,"POST");
@@ -75,7 +77,7 @@ public class VaultModule implements CypherModule {
             String vaultToken = cypher.read("vault/config/token").value;
 
             //we gotta fetch from Vault
-            String vaultPath="/v1/${relativeKey}";
+            String vaultPath="/v1/" + relativeKey;
             RestApiUtil.RestOptions restOptions = new RestApiUtil.RestOptions();
             restOptions.headers = new LinkedHashMap<>();
             restOptions.headers.put("X-VAULT-TOKEN",vaultToken);
@@ -87,8 +89,10 @@ public class VaultModule implements CypherModule {
                     TypeReference<HashMap<String,Object>> typeRef
                             = new TypeReference<HashMap<String,Object>>() {};
                     HashMap<String,Object> responseJson = mapper.readValue(resp.getContent(), typeRef);
-                    Map<String,Object> dataMap = (java.util.Map<String,Object>)(responseJson.get("data"));
-                    return new CypherObject(key,mapper.writeValueAsString(dataMap),leaseTimeout,leaseObjectRef, createdBy);
+                    Map<String,Object> dataMap = (java.util.Map<String,Object>)(((java.util.Map<String,Object>)(responseJson.get("data"))).get("data"));
+                    CypherObject vaultResult = new CypherObject(key,mapper.writeValueAsString(dataMap),leaseTimeout,leaseObjectRef, createdBy);
+                    vaultResult.shouldPersist = false;
+                    return vaultResult;
                 } else {
                     return null;//throw exception?
                 }
@@ -110,7 +114,7 @@ public class VaultModule implements CypherModule {
             String vaultToken = cypher.read("vault/config/token").value;
 
             //we gotta fetch from Vault
-            String vaultPath="/v1/${relativeKey}";
+            String vaultPath="v1/" + relativeKey;
             //TODO: HTTP Client time
             RestApiUtil.RestOptions restOptions = new RestApiUtil.RestOptions();
             restOptions.headers = new LinkedHashMap<>();

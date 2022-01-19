@@ -81,7 +81,7 @@ class CypherController {
     }
 
     @Post("{/path:.+}{?leaseTimeout,ttl,type}")
-    @Consumes([MediaType.APPLICATION_JSON,"application/hcl"])
+    @Consumes([MediaType.APPLICATION_JSON,"application/hcl","text/plain"])
     HttpResponse<CypherItem> save(HttpRequest request, @Nullable @PathVariable String path, @Nullable @QueryValue Long leaseTimeout, @Nullable @QueryValue String ttl, @Nullable @QueryValue String type, @Body @Nullable String bodyText) {
         String token = getToken(request)
         try {
