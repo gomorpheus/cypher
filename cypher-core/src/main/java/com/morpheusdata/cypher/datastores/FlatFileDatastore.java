@@ -192,11 +192,23 @@ public class FlatFileDatastore implements Datastore {
 			return new HashMap<String,Map<String,String>>();
 		}
 		synchronized(lockObj) {
-			FileInputStream fis = new FileInputStream(fileLocation);
-			ObjectInputStream ois = new ObjectInputStream(fis);
+			FileInputStream fis = null;
+			ObjectInputStream ois = null;
+			try {
+				fis = new FileInputStream(fileLocation);
+				ois = new ObjectInputStream(fis);
+				Map<String,Map<String,String>> result = (Map<String,Map<String,String>>)ois.readObject();
+				return result;
+			} finally {
+				if(ois != null) {
+					ois.close();
+				}
+				if(fis != null) {
+					fis.close();
+				}
 
-			Map<String,Map<String,String>> result = (Map<String,Map<String,String>>)ois.readObject();
-			return result;
+			}
+
 		}
 	}
 
