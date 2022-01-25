@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d45c3346-c3ae-47a9-b5dd-834035f863dc" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/cypher.iws" beforeDir="false" afterPath="$PROJECT_DIR$/cypher.iws" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypher-web/src/main/groovy/com/morpheusdata/cypher/controller/CypherController.groovy" beforeDir="false" afterPath="$PROJECT_DIR$/cypher-web/src/main/groovy/com/morpheusdata/cypher/controller/CypherController.groovy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -386,7 +387,7 @@
       <workItem from="1641911957586" duration="1880000" />
       <workItem from="1642514320771" duration="12768000" />
       <workItem from="1642606037965" duration="5920000" />
-      <workItem from="1643043380390" duration="12000" />
+      <workItem from="1643043380390" duration="785000" />
     </task>
     <servers />
   </component>
