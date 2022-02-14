@@ -1,11 +1,11 @@
 package com.morpheusdata.cypher
 
 import com.morpheusdata.cypher.datastores.FlatFileDatastore
+import com.morpheusdata.cypher.util.DatatypeConverterUtil
 import spock.lang.Shared
 import spock.lang.Specification
 
 import javax.crypto.KeyGenerator
-import jakarta.xml.bind.DatatypeConverter
 import java.security.SecureRandom
 
 /**
@@ -54,7 +54,7 @@ class CypherSpec extends Specification{
 		when:
 		def result = cypher.read("key/128/hello")
 		then:
-		DatatypeConverter.parseBase64Binary(result?.value)?.size() == 16
+		DatatypeConverterUtil.parseBase64Binary(result?.value)?.size() == 16
 		result?.value == secret
 	}
 

@@ -25,7 +25,6 @@ java {
 dependencies {
     compileOnly("commons-logging:commons-logging:1.1.1")
     implementation('com.bertramlabs.plugins:hcl4j:0.3.0')
-    implementation('jakarta.xml.bind:jakarta.xml.bind-api:3.0.0')
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
     implementation 'org.apache.httpcomponents:httpmime:4.5.13'
     implementation 'org.apache.httpcomponents:httpasyncclient:4.1.4'

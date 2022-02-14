@@ -4,10 +4,10 @@ import com.morpheusdata.cypher.CypherValue;
 import com.morpheusdata.cypher.Datastore;
 import com.morpheusdata.cypher.ValueEncoder;
 import com.morpheusdata.cypher.exception.DatastoreException;
+import com.morpheusdata.cypher.util.DatatypeConverterUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import jakarta.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -262,7 +262,7 @@ public class FlatFileDatastore implements Datastore {
 	protected String keyHash(String key) throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("MD5");
 		digest.update(key.getBytes("UTF-8"));
-		String fullHash = DatatypeConverter.printBase64Binary(digest.digest());
+		String fullHash = DatatypeConverterUtil.printBase64Binary(digest.digest());
 		return fullHash.substring(0,3);
 	}
 }

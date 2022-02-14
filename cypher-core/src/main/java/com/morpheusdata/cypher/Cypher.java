@@ -1,11 +1,11 @@
 package com.morpheusdata.cypher;
 
 import com.morpheusdata.cypher.exception.EncoderException;
+import com.morpheusdata.cypher.util.DatatypeConverterUtil;
 import com.morpheusdata.cypher.modules.*;
 import com.morpheusdata.cypher.util.SecurityUtils;
 
 import javax.crypto.KeyGenerator;
-import jakarta.xml.bind.DatatypeConverter;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class Cypher {
 	}
 
 	public void setMasterKey(String masterKey) {
-		this.cypherMeta.masterKey = DatatypeConverter.parseBase64Binary(masterKey);
+		this.cypherMeta.masterKey = DatatypeConverterUtil.parseBase64Binary(masterKey);
 		initializeInternal();
 	}
 
@@ -171,7 +171,7 @@ public class Cypher {
 
 		CypherValue value = datastore.read(id,key);
 		if(value != null) {
-			byte[] encryptedEncryptionKey = DatatypeConverter.parseBase64Binary(value.encryptedEncryptionKey);
+			byte[] encryptedEncryptionKey = DatatypeConverterUtil.parseBase64Binary(value.encryptedEncryptionKey);
 			byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
 			String decryptedValue = valueEncoder.decode(decryptedEncryptionKey, value.value);
 			SecurityUtils.secureErase(decryptedEncryptionKey);
@@ -244,7 +244,7 @@ public class Cypher {
 		byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,cypherMeta.encryptedEncryptionKey);
 		String encryptedValue = valueEncoder.encode(decryptedEncryptionKey, obj.value);
 		SecurityUtils.secureErase(decryptedEncryptionKey);
-		CypherValue value = new CypherValue(obj.key,encryptedValue,DatatypeConverter.printBase64Binary(cypherMeta.encryptedEncryptionKey),obj.leaseTimeout, obj.leaseObjectRef, obj.createdBy);
+		CypherValue value = new CypherValue(obj.key,encryptedValue,DatatypeConverterUtil.printBase64Binary(cypherMeta.encryptedEncryptionKey),obj.leaseTimeout, obj.leaseObjectRef, obj.createdBy);
 		datastore.write(id,value);
 	}
 
@@ -269,7 +269,7 @@ public class Cypher {
 		if(this.status == Status.LOCKED) {
 			throw new IllegalStateException("Cannot set a new encryption key without an unlocked Cypher");
 		}
-		byte[] encryptionKeyBytes = DatatypeConverter.parseBase64Binary(encryptionKey);
+		byte[] encryptionKeyBytes = DatatypeConverterUtil.parseBase64Binary(encryptionKey);
 		SecurityUtils.secureErase(encryptionKeyBytes);
 		this.cypherMeta.encryptedEncryptionKey = valueEncoder.encode(cypherMeta.masterKey, encryptionKeyBytes );
 	}
