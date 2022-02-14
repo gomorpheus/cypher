@@ -1,6 +1,7 @@
 package com.morpheusdata.cypher;
 
 import com.morpheusdata.cypher.exception.EncoderException;
+import com.morpheusdata.cypher.util.DatatypeConverterUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -8,7 +9,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import jakarta.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -36,7 +36,7 @@ public class AESValueEncoder implements ValueEncoder {
 	@Override
 	public String encode(byte[] encryptionKey, String value) throws EncoderException {
 		try {
-			return DatatypeConverter.printBase64Binary(encode(encryptionKey, value.getBytes("UTF-8")));
+			return DatatypeConverterUtil.printBase64Binary(encode(encryptionKey, value.getBytes("UTF-8")));
 		} catch(UnsupportedEncodingException ex) {
 			throw new EncoderException("Unsupported Encoding of String value. UTF-8 is required",ex);
 		}
@@ -75,7 +75,7 @@ public class AESValueEncoder implements ValueEncoder {
 	 */
 	@Override
 	public String decode(byte[] encryptionKey, String encryptedValue) throws EncoderException {
-		return new String(decode(encryptionKey,DatatypeConverter.parseBase64Binary(encryptedValue)), StandardCharsets.UTF_8);
+		return new String(decode(encryptionKey,DatatypeConverterUtil.parseBase64Binary(encryptedValue)), StandardCharsets.UTF_8);
 	}
 
 	@Override
