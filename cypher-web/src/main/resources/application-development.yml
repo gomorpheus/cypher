@@ -1,3 +1,6 @@
+micronaut:
+  server:
+    port: 8090
 cypher:
   storageLocation: /tmp/cypherTest
   masterKey: zNmL01Nz6kDE6a5VKRwQr8hm4W2DVqgWY2fWutJyNhQ=
