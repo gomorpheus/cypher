@@ -71,9 +71,6 @@ public class Cypher {
 		mountedModules.put("uuid",new UUIDModule());
 		mountedModules.put("key",new RandomKeyModule());
 		mountedModules.put("password",new PasswordModule());
-		VaultModule vaultModule = new VaultModule();
-		vaultModule.setCypher(this);
-		mountedModules.put("vault",vaultModule);
 	}
 
 	public void registerModule(String mountPoint, CypherModule module) {
