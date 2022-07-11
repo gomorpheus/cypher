@@ -30,7 +30,7 @@ public class Cypher {
 	private Map<String,CypherModule> mountedModules;
 	public static List<Cypher> cypherClasses = new ArrayList<>();
 	public static CypherCleanupThread cleanupThread;
-
+	private Map<String, CypherModule> defaultModules;
 
 
 	public Cypher(String id, Datastore datastore) {
@@ -65,15 +65,20 @@ public class Cypher {
 	}
 
 	public void registerDefaultModules() {
-		this.mountedModules = new HashMap<>();
-		mountedModules.put("secret",new SecretModule());
-		mountedModules.put("sys",new SecretModule());
-		mountedModules.put("uuid",new UUIDModule());
-		mountedModules.put("key",new RandomKeyModule());
-		mountedModules.put("password",new PasswordModule());
+		this.defaultModules = new HashMap<String, CypherModule>();
+		defaultModules.put("secret",new SecretModule());
+		defaultModules.put("sys",new SecretModule());
+		defaultModules.put("uuid",new UUIDModule());
+		defaultModules.put("key",new RandomKeyModule());
+		defaultModules.put("password",new PasswordModule());
 		VaultModule vaultModule = new VaultModule();
 		vaultModule.setCypher(this);
-		mountedModules.put("vault",vaultModule);
+		defaultModules.put("vault",vaultModule);
+		this.mountedModules = new HashMap<String, CypherModule>(this.defaultModules); //shallow copy module objects
+	}
+
+	public Map<String, CypherModule> getDefaultModules() {
+		return this.defaultModules;
 	}
 
 	public void registerModule(String mountPoint, CypherModule module) {
