@@ -71,9 +71,6 @@ public class Cypher {
 		defaultModules.put("uuid",new UUIDModule());
 		defaultModules.put("key",new RandomKeyModule());
 		defaultModules.put("password",new PasswordModule());
-		VaultModule vaultModule = new VaultModule();
-		vaultModule.setCypher(this);
-		defaultModules.put("vault",vaultModule);
 		this.mountedModules = new HashMap<String, CypherModule>(this.defaultModules); //shallow copy module objects
 	}
 
