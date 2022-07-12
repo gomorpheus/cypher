@@ -5,6 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d45c3346-c3ae-47a9-b5dd-834035f863dc" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/cypher-core/src/main/java/com/morpheusdata/cypher/modules/VaultModule.java" beforeDir="false" afterPath="$PROJECT_DIR$/cypher-core/src/main/java/com/morpheusdata/cypher/modules/VaultModule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypher.iml" beforeDir="false" afterPath="$PROJECT_DIR$/cypher.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypher.ipr" beforeDir="false" afterPath="$PROJECT_DIR$/cypher.ipr" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cypher.iws" beforeDir="false" afterPath="$PROJECT_DIR$/cypher.iws" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -66,20 +69,12 @@
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="cypher" type="f1a62948:ProjectNode" />
               </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="cypher" type="f1a62948:ProjectNode" />
-                <item name="cypher-web" type="2d1252cf:ModuleNode" />
-              </path>
             </expand>
             <select />
           </tree_state>
         </projects_view>
       </state>
     </system>
-  </component>
-  <component name="FavoritesManager">
-    <favorites_list name="cypher" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -136,6 +131,9 @@
         <option value="$PROJECT_DIR$/cypher-aws/src/main/java/com/morpheus/cypher/aws/AwsModule.java" />
       </list>
     </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ModuleEditorState">
     <option name="LAST_EDITED_MODULE_NAME" />
@@ -388,6 +386,9 @@
       <workItem from="1642606037965" duration="5920000" />
       <workItem from="1643043380390" duration="2111000" />
       <workItem from="1643223691648" duration="86000" />
+      <workItem from="1645810629675" duration="189000" />
+      <workItem from="1651534001879" duration="5597000" />
+      <workItem from="1651757718771" duration="2198000" />
     </task>
     <servers />
   </component>
@@ -471,7 +472,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
