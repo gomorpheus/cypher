@@ -78,4 +78,10 @@ public interface CypherModule {
 	 * @return description of how this module can be used. It is possible to string replace the {mountPoint} pattern for usage examples.
 	 */
 	public String getHTMLUsage();
+	
+	/**
+	 * The alwaysRead method is used to determine if the module should always be used for read requests
+	 * @return if this returns true then Cypher read requests are always executed through the module and not from a value that exists within {@link Datastore}.
+	 */
+	public Boolean alwaysRead();
 }

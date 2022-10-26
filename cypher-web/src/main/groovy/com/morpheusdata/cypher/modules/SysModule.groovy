@@ -55,6 +55,11 @@ class SysModule implements CypherModule {
     String getHTMLUsage() {
         return null
     }
+    
+    @Override 
+    Boolean alwaysRead() {
+      return false 
+    }
 
     protected writeTokenToPasswd(String tokenValue) {
         CypherObject passwdData = cypher.read("sys/passwd")

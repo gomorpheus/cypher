@@ -205,7 +205,11 @@ public class AwsModule implements CypherModule {
 	public String getHTMLUsage() {
 		return null;
 	}
-
+	
+	@Override
+	public Boolean alwaysRead() {
+		return false;
+	}
 
 	private Map<String,Object> loadConfig(String role) {
 		HCLParser parser = new HCLParser();
