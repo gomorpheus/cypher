@@ -177,17 +177,21 @@ public class Cypher {
 		String relativeKey = key.substring(path.length()+1);
 		CypherValue value = datastore.read(id,key);
 		if(value != null) {
+			byte[] encryptedEncryptionKey = DatatypeConverterUtil.parseBase64Binary(value.encryptedEncryptionKey);
+			byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
+			String decryptedValue = valueEncoder.decode(decryptedEncryptionKey, value.value);
 			if(module.alwaysRead()) {
 				CypherObject obj = module.read(relativeKey, path, value.leaseTimeout, value.leaseObjectRef, value.createdBy);
 				if(obj != null) {
-					writeCypherObject(obj);
+					if(!decryptedValue.equals(obj.value.toString())) {
+						//module has changed database value so we need to update it
+						//TODO: A different method that allows update without bumping leaseTimeout
+						writeCypherObject(obj);
+					}
 					return obj;
 				}
 				return null;
 			} else {
-				byte[] encryptedEncryptionKey = DatatypeConverterUtil.parseBase64Binary(value.encryptedEncryptionKey);
-				byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
-				String decryptedValue = valueEncoder.decode(decryptedEncryptionKey, value.value);
 				SecurityUtils.secureErase(decryptedEncryptionKey);
 				return new CypherObject(key,decryptedValue,value.leaseTimeout, value.leaseObjectRef, value.createdBy);
 			}
