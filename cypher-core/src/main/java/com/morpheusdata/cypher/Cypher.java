@@ -180,6 +180,7 @@ public class Cypher {
 			byte[] encryptedEncryptionKey = DatatypeConverterUtil.parseBase64Binary(value.encryptedEncryptionKey);
 			byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
 			String decryptedValue = valueEncoder.decode(decryptedEncryptionKey, value.value);
+			SecurityUtils.secureErase(decryptedEncryptionKey);
 			if(module.alwaysRead()) {
 				CypherObject obj = module.read(relativeKey, path, value.leaseTimeout, value.leaseObjectRef, value.createdBy);
 				if(obj != null) {
@@ -192,7 +193,6 @@ public class Cypher {
 				}
 				return null;
 			} else {
-				SecurityUtils.secureErase(decryptedEncryptionKey);
 				return new CypherObject(key,decryptedValue,value.leaseTimeout, value.leaseObjectRef, value.createdBy);
 			}
 		} else {
