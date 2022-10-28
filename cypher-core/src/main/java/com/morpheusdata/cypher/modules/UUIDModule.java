@@ -8,7 +8,7 @@ import com.morpheusdata.cypher.CypherObject;
 /**
  * Created by davydotcom on 2/3/17.
  */
-public class UUIDModule implements CypherModule {
+public class UUIDModule extends AbstractCypherModule {
 	private CypherMeta cypherMeta;
 
 	/**

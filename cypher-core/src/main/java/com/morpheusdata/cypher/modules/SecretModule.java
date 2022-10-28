@@ -9,7 +9,7 @@ import com.morpheusdata.cypher.util.SecurityUtils;
  *
  * @author David Estes
  */
-public class SecretModule implements CypherModule {
+public class SecretModule extends AbstractCypherModule {
 
 	/**
 	 * Some Modules need the cypher object to query config data. This allows it to be assigned on the constructor

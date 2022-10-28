@@ -78,4 +78,10 @@ public interface CypherModule {
 	 * @return description of how this module can be used. It is possible to string replace the {mountPoint} pattern for usage examples.
 	 */
 	public String getHTMLUsage();
+	
+	/**
+	 * The readFromDatastore method is used to determine if Cypher should read from the value stored within the {@link Datastore} on read requests 
+	 * @return if this returns false then Cypher read requests are always executed through the module and do not read from a value that exists within the {@link Datastore}.
+	 */
+	public Boolean readFromDatastore();
 }
