@@ -10,7 +10,7 @@ import java.security.SecureRandom;
  *
  * @author David Estes
  */
-public class PasswordModule implements CypherModule {
+public class PasswordModule extends AbstractCypherModule {
 	private CypherMeta cypherMeta;
 
 	private String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#%^&*()-_=+[{]}\\|;:,<.>/";

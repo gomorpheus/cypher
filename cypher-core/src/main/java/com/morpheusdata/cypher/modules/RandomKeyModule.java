@@ -15,7 +15,7 @@ import java.text.NumberFormat;
 /**
  * Created by davydotcom on 2/3/17.
  */
-public class RandomKeyModule implements CypherModule {
+public class RandomKeyModule extends AbstractCypherModule {
 
 	/**
 	 * Some Modules need the cypher object to query config data. This allows it to be assigned on the constructor

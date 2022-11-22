@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 
-public class VaultModule implements CypherModule {
+public class VaultModule extends AbstractCypherModule {
 
     Cypher cypher;
     @Override

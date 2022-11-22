@@ -173,17 +173,29 @@ public class Cypher {
 		if(path == null) {
 			return null;
 		}
-
+		CypherModule module = mountedModules.get(path);
+		String relativeKey = key.substring(path.length()+1);
 		CypherValue value = datastore.read(id,key);
 		if(value != null) {
 			byte[] encryptedEncryptionKey = DatatypeConverterUtil.parseBase64Binary(value.encryptedEncryptionKey);
 			byte[] decryptedEncryptionKey = valueEncoder.decode(cypherMeta.masterKey,encryptedEncryptionKey);
 			String decryptedValue = valueEncoder.decode(decryptedEncryptionKey, value.value);
 			SecurityUtils.secureErase(decryptedEncryptionKey);
-			return new CypherObject(key,decryptedValue,value.leaseTimeout, value.leaseObjectRef, value.createdBy);
+			if(module.readFromDatastore()) {
+				return new CypherObject(key,decryptedValue,value.leaseTimeout, value.leaseObjectRef, value.createdBy);
+			} else {
+				CypherObject obj = module.read(relativeKey, path, value.leaseTimeout, value.leaseObjectRef, value.createdBy);
+				if(obj != null) {
+					if(!decryptedValue.equals(obj.value.toString())) {
+						//module has changed database value so we need to update it
+						//TODO: A different method that allows update without bumping leaseTimeout
+						writeCypherObject(obj);
+					}
+					return obj;
+				}
+				return null;
+			}
 		} else {
-			CypherModule module = mountedModules.get(path);
-			String relativeKey = key.substring(path.length()+1);
 			CypherObject obj = module.read(relativeKey,path, leaseTimeout != null ? leaseTimeout : this.leaseTimeout, leaseObjectRef, createdBy);
 			if(obj != null) {
 				if(obj.shouldPersist != false) {
@@ -193,7 +205,6 @@ public class Cypher {
 			}
 			return null;
 		}
-
 	}
 
 	/**
